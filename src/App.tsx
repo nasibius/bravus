@@ -107,12 +107,12 @@ export default function App() {
   };
 
   return (
-    <div className="absolute inset-0 bg-[#141416] text-[#F3F4F6] font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif] antialiased overflow-hidden flex flex-col shadow-2xl selection:bg-[#D2F442] selection:text-black">
+    <div className="min-h-[100dvh] w-full bg-[#141416] text-[#F3F4F6] font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif] antialiased flex flex-col relative shadow-2xl selection:bg-[#D2F442] selection:text-black">
       {/* Background ambient gradient */}
       <div className="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-br from-[#2f3812] via-[#141416] to-[#141416] opacity-60 pointer-events-none" />
 
-      {/* Main Scrollable Content */}
-      <div className="relative z-10 flex flex-col flex-1 h-full overflow-y-auto hide-scrollbar">
+      {/* Main Content */}
+      <div className="relative z-10 flex flex-col flex-1 w-full pb-32">
         <AnimatePresence mode="wait">
           {activeTab === 'today' ? (
             <motion.div key="today" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="flex flex-col flex-1">
@@ -132,16 +132,10 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
-        
-        {/* Footer */}
-        <div className="mt-auto px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 text-center text-zinc-500 text-[12px] font-medium shrink-0 pointer-events-none">
-          <span className="font-bold text-zinc-400">Bravus</span><br/>
-          Copyright © Darvish CO
-        </div>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="absolute bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
+      <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
         {/* Nav Pill */}
         <div className="flex bg-[#28282A] p-1.5 rounded-full shadow-2xl flex-1 mr-3 pointer-events-auto items-center">
           <NavButton 
@@ -169,7 +163,7 @@ export default function App() {
       {/* Modals & Overlays */}
       <AnimatePresence>
       {photoModalOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white rounded-3xl p-6 w-full max-w-sm mx-auto shadow-2xl flex flex-col items-center">
             <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4 text-blue-600">
               <Camera className="w-8 h-8" />
@@ -195,7 +189,7 @@ export default function App() {
 
       <AnimatePresence>
       {addTaskModalOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]">
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-zinc-900 tracking-tight">Submit New Task</h3>
@@ -225,7 +219,7 @@ export default function App() {
 
       <AnimatePresence>
       {moreMenuOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center p-0" onClick={() => setMoreMenuOpen(false)}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center p-0" onClick={() => setMoreMenuOpen(false)}>
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-2" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-1.5 bg-zinc-200 rounded-full mx-auto mb-4" />
             <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors">Sort by Urgent First</button>
@@ -275,7 +269,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
   }, [tasks, filter]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-[100dvh]">
       {/* Header */}
       <div className="flex justify-between items-start px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-5">
         <div>
@@ -312,7 +306,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
       </div>
 
       {/* White Sheet Content */}
-      <div className="bg-[#FFFFFF] mx-0 sm:mx-0 rounded-[32px] mt-4 pt-7 px-5 pb-8 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] min-h-[400px]">
+      <div className="bg-[#FFFFFF] mx-0 sm:mx-0 rounded-t-[32px] mt-4 pt-7 px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex-1 flex flex-col">
         <div className="flex justify-between items-center mb-5 px-1">
           <h3 className="text-[17px] font-bold text-zinc-900 tracking-tight">{filter} Tasks</h3>
           <button onClick={onOpenMore} className="text-zinc-400 p-1 hover:text-zinc-600 transition-colors cursor-pointer"><MoreHorizontal className="w-5 h-5" /></button>
@@ -358,7 +352,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
 
 function ProfileView() {
   return (
-    <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+2.5rem)] pb-6">
+    <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+2.5rem)] pb-[calc(7rem+env(safe-area-inset-bottom))]">
       
       {/* Profile Header */}
       <div className="flex items-center gap-4 mb-8">
@@ -616,7 +610,7 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: '100%', opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="absolute inset-0 z-[80] bg-[#141416] flex flex-col pt-[calc(env(safe-area-inset-top)+2.5rem)]"
+      className="fixed inset-0 w-full h-[100dvh] z-[80] bg-[#141416] flex flex-col pt-[calc(env(safe-area-inset-top)+2.5rem)]"
     >
       {/* Header */}
       <div className="flex justify-between items-center px-6 pt-2 pb-4">
