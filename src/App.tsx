@@ -29,13 +29,11 @@ interface Task {
 }
 
 const initialTasks: Task[] = [
-  { id: '1', title: 'Restock front shelves', category: 'Floor', points: 3, timeLimit: '30 mins', status: 'completed', requiresPhoto: true, assignee: 'Hasan', description: 'Please ensure all items from the backroom are brought to the front and arranged by size according to the planogram.', files: ['planogram_v2.pdf'] },
-  { id: '2', title: 'Organize shoe display', category: 'Floor', points: 4, timeLimit: '45 mins', status: 'claimed', requiresPhoto: true, assignee: 'Hasan', description: 'Make sure all shoes are paired correctly and sizes run from smallest to largest left-to-right.' },
   { id: '3', title: 'Help at register 3', category: 'Service', points: 2, timeLimit: '15 mins', status: 'open', isUrgent: true, requiresPhoto: false, assignedGroup: 'Cashiers', description: 'Line is backing up, need immediate assistance for 15 minutes to clear the rush.' },
-  { id: '4', title: 'Clean breakroom', category: 'Maintenance', points: 2, timeLimit: '30 mins', status: 'completed', requiresPhoto: true },
-  { id: '5', title: 'Inventory check - electronics', category: 'Stock', points: 5, timeLimit: '1.5 hrs', status: 'open', requiresPhoto: true, files: ['inventory_list_elect.pdf'] },
   { id: '6', title: 'Update promotion signs', category: 'Floor', points: 3, timeLimit: '45 mins', status: 'open', requiresPhoto: true, assignedGroup: 'Floor Staff', description: 'Remove old weekend sale signs and put up the new clearance event signs.', files: ['sign_locations.pdf', 'clearance_guidelines.pdf'] },
-  { id: '7', title: 'Worked as cashier (3 hours)', category: 'Service', points: 8, timeLimit: '3 hrs', status: 'open', requiresPhoto: false },
+  { id: '7', title: 'Work as cashier (3 hours)', category: 'Service', points: 8, timeLimit: '3 hrs', status: 'open', requiresPhoto: false },
+  { id: '8', title: 'Organizing products on shelves', category: 'Stock', points: 4, timeLimit: '1 hr', status: 'open', requiresPhoto: false },
+  { id: '9', title: 'Chaning price tags in drink area', category: 'Floor', points: 3, timeLimit: '30 mins', status: 'open', requiresPhoto: true }
 ];
 
 export default function App() {
@@ -125,10 +123,10 @@ export default function App() {
       <BackgroundHexagon />
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col flex-1 w-full pb-32">
-        <AnimatePresence mode="wait">
+      <div className="relative z-10 flex flex-col flex-1 w-full">
+        <AnimatePresence mode="popLayout">
           {activeTab === 'today' ? (
-            <motion.div key="today" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="flex flex-col flex-1">
+            <motion.div key="today" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.15, ease: "easeOut" }} className="flex flex-col flex-1">
               <TodayView 
                 tasks={tasks} 
                 pointsEarned={pointsEarned} 
@@ -140,23 +138,22 @@ export default function App() {
               />
             </motion.div>
           ) : (
-            <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }} className="flex flex-col flex-1">
+            <motion.div key="profile" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.15, ease: "easeOut" }} className="flex flex-col flex-1">
               <ProfileView />
             </motion.div>
           )}
         </AnimatePresence>
         
         {/* Footer */}
-        <div className="mt-auto px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 text-center text-zinc-500 text-[12px] font-medium shrink-0 pointer-events-none">
-          <span className="font-bold text-zinc-400">Bravus</span><br/>
-          Copyright © Darvish CO
+        <div className="mt-auto px-6 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-8 text-center text-zinc-500 text-[11px] font-medium shrink-0 pointer-events-none opacity-50">
+          <span className="font-bold text-zinc-400">Bravus</span> • Copyright © Darvish CO
         </div>
       </div>
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
         {/* Nav Pill */}
-        <div className="flex bg-[#1C1C1E] p-0.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex-1 mr-3 pointer-events-auto items-center border border-zinc-800/50">
+        <div className="flex bg-white/10 backdrop-blur-md p-1 rounded-full shadow-lg flex-1 mr-3 pointer-events-auto items-center border border-white/10">
           <NavButton 
             icon={<Calendar className="w-4 h-4" />} 
             label="Today" 
@@ -173,7 +170,7 @@ export default function App() {
         {/* FAB */}
         <button 
           onClick={() => setAddTaskModalOpen(true)}
-          className="bg-[#1C1C1E] w-[40px] h-[40px] rounded-full flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer border border-zinc-700/50"
+          className="bg-white/10 backdrop-blur-md w-[48px] h-[48px] rounded-full flex items-center justify-center shrink-0 shadow-lg pointer-events-auto hover:bg-white/20 active:scale-95 transition-all cursor-pointer border border-white/10"
         >
           <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
         </button>
@@ -209,7 +206,7 @@ export default function App() {
       <AnimatePresence>
       {addTaskModalOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]">
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-[#1C1C1E] border border-zinc-800 rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white tracking-tight">Submit New Task</h3>
               <button onClick={() => !isProcessingTask && setAddTaskModalOpen(false)} className="text-zinc-400 hover:text-white bg-zinc-800 rounded-full p-1.5"><X className="w-5 h-5" /></button>
@@ -239,7 +236,7 @@ export default function App() {
       <AnimatePresence>
       {moreMenuOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center p-0" onClick={() => setMoreMenuOpen(false)}>
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-[#1C1C1E] rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-2 border-t border-zinc-800/50" onClick={e => e.stopPropagation()}>
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-md rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-2 border-t border-white/10" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-1.5 bg-zinc-700/50 rounded-full mx-auto mb-4" />
             <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-white hover:bg-zinc-800/50 transition-colors">Sort by Urgent First</button>
             <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-white hover:bg-zinc-800/50 transition-colors">Sort by Points</button>
@@ -288,31 +285,16 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
   }, [tasks, filter]);
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
+    <div className="flex flex-col flex-1 pb-6">
       {/* Header */}
-      <div className="flex justify-between items-start px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-5">
+      <div className="flex justify-between items-start px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5">
         <div>
           <p className="text-[#a1a1aa] text-[13px] font-medium tracking-wide mb-1">Wednesday, 26 February</p>
           <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Hasan</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-[#1C1C1E] flex items-center justify-center shrink-0 hover:bg-zinc-800 transition-colors cursor-pointer border border-zinc-800/50">
+        <button className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center shrink-0 hover:bg-white/10 transition-colors cursor-pointer border border-white/10 shadow-lg">
           <Bell className="w-4 h-4 text-white" />
         </button>
-      </div>
-
-      {/* Gamification Goal Card */}
-      <div className="px-6 mb-7">
-        <div className="bg-[#D2F442] rounded-[28px] p-5 flex justify-between items-center shadow-[0_8px_30px_rgb(210,244,66,0.15)] text-[#18181b] relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="flex items-center gap-1.5 mb-1">
-              <h2 className="text-[19px] font-bold tracking-tight">Points Goal</h2>
-            </div>
-            <p className="text-[#65761a] text-[14px] font-semibold">{pointsEarned} / {dailyGoal} points earned</p>
-          </div>
-          <div className="relative z-10">
-            <CircularProgress value={Math.round((pointsEarned / dailyGoal) * 100)} size={68} strokeWidth={6} color="stroke-[#18181b]" trackColor="stroke-[#18181b]/10" textClass="text-base font-bold" overColor="stroke-[#EAB308]" />
-          </div>
-        </div>
       </div>
 
       {/* Filter Tabs */}
@@ -325,7 +307,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
       </div>
 
       {/* Task List Content */}
-      <div className="mx-0 sm:mx-0 mt-0 pt-4 px-5 flex-1 flex flex-col">
+      <div className="mx-0 sm:mx-0 mt-0 pt-0 px-5 flex-1 flex flex-col">
         <div className="flex justify-between items-center mb-4 px-1">
           <h3 className="text-[17px] font-bold text-white tracking-tight">{filter} Tasks</h3>
           <button onClick={onOpenMore} className="text-zinc-400 p-1 hover:text-white transition-colors cursor-pointer"><MoreHorizontal className="w-5 h-5" /></button>
@@ -371,7 +353,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
 
 function ProfileView() {
   return (
-    <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+2.5rem)] pb-[calc(7rem+env(safe-area-inset-bottom))]">
+    <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6 flex-1">
       
       {/* Profile Header */}
       <div className="flex items-center gap-4 mb-8">
@@ -384,18 +366,18 @@ function ProfileView() {
       
       {/* Stats */}
       <div className="flex gap-4 mb-8">
-         <div className="flex-1 bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg">
+         <div className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-5 shadow-lg">
             <p className="text-[#a1a1aa] text-[13px] font-medium mb-1">Monthly Points</p>
             <p className="text-[#D2F442] text-[22px] font-semibold">1,420</p>
          </div>
-         <div className="flex-1 bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg">
+         <div className="flex-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-5 shadow-lg">
             <p className="text-[#a1a1aa] text-[13px] font-medium mb-1">Overall</p>
             <p className="text-white text-[22px] font-semibold">8,350</p>
          </div>
       </div>
 
       {/* Activity Calendar (GitHub style) */}
-      <div className="bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg mb-8">
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-5 shadow-lg mb-8">
         <h3 className="text-white font-semibold text-[15px] mb-3">Activity Calendar</h3>
         <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-2">
            {/* Generate roughly 7 months of 7 days */}
@@ -432,7 +414,7 @@ function ProfileView() {
       </div>
 
       {/* Task History */}
-      <div className="bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg mb-[calc(7rem+env(safe-area-inset-bottom))] border border-zinc-800/50">
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-5 shadow-lg mb-[calc(7rem+env(safe-area-inset-bottom))]">
         <h3 className="text-white font-semibold text-[15px] mb-4">Recent Task History</h3>
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-center border-b border-zinc-700/50 pb-3">
@@ -558,9 +540,9 @@ function TabBadge({ label, count, isActive = false, onClick }: { label: string, 
   return (
     <button 
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[18px] cursor-pointer transition-all duration-200 hover:scale-[0.98] active:scale-95 ${isActive ? 'bg-white shadow-sm ring-1 ring-white' : 'bg-[#1C1C1E] hover:bg-zinc-800'}`}>
-      <span className={`text-[14px] font-bold text-left ${isActive ? 'text-zinc-900' : 'text-[#e4e4e7]'}`}>{label}</span>
-      <span className={`text-[11px] font-semibold text-left ${isActive ? 'text-[#65761a]' : 'text-[#858589]'}`}>{count}</span>
+      className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[18px] cursor-pointer transition-all duration-200 hover:scale-[0.98] active:scale-95 backdrop-blur-md ${isActive ? 'bg-[#D2F442]/20 border-[#D2F442]/30 border shadow-lg' : 'bg-white/5 border border-white/5 hover:bg-white/10'}`}>
+      <span className={`text-[14px] font-bold text-left ${isActive ? 'text-[#D2F442]' : 'text-[#e4e4e7]'}`}>{label}</span>
+      <span className={`text-[11px] font-semibold text-left ${isActive ? 'text-[#D2F442]/80' : 'text-[#858589]'}`}>{count}</span>
     </button>
   );
 }
@@ -597,8 +579,8 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
   return (
     <div 
       onClick={onClick}
-      className={`flex-1 rounded-[20px] p-3.5 pl-4 relative border shadow-sm overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-md hover:border-zinc-600 
-      ${task.status === 'completed' ? 'bg-[#1C1C1E]/60 border-zinc-800/50 opacity-70' : 'bg-[#1C1C1E] border-zinc-700/50'}
+      className={`flex-1 rounded-[20px] p-3.5 pl-4 relative border shadow-lg overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-white/20 backdrop-blur-md
+      ${task.status === 'completed' ? 'bg-white/5 border-white/5 opacity-60' : 'bg-white/5 border-white/10'}
     `}>
       {/* Left Color Accent Line */}
       <div className={`absolute left-0 top-3 bottom-3 w-1.5 rounded-r-md ${accentColor}`} />
@@ -650,43 +632,6 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
   );
 }
 
-function CircularProgress({ value, size = 64, strokeWidth = 6, color = "stroke-current", trackColor = "stroke-current", textClass = "", overColor = "" }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  
-  const isOver = value > 100;
-  const firstLevelOffset = circumference - (Math.min(value, 100) / 100) * circumference;
-  const secondLevelOffset = isOver ? circumference - (Math.min(value - 100, 100) / 100) * circumference : circumference;
-
-  return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90" width={size} height={size}>
-        {/* Base Track */}
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" className={trackColor} strokeWidth={strokeWidth} />
-        
-        {/* First 100% */}
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} fill="none" className={`${isOver ? color : color} transition-all duration-1000 ease-out`}
-          strokeWidth={strokeWidth} strokeLinecap="round"
-          strokeDasharray={circumference} strokeDashoffset={firstLevelOffset}
-        />
-
-        {/* Above 100% (Gold overlay) */}
-        {isOver && (
-          <circle
-            cx={size / 2} cy={size / 2} r={radius} fill="none" className={`${overColor} transition-all duration-1000 ease-out drop-shadow-sm`}
-            strokeWidth={strokeWidth} strokeLinecap="round"
-            strokeDasharray={circumference} strokeDashoffset={secondLevelOffset}
-          />
-        )}
-      </svg>
-      <span className={`absolute flex items-center justify-center tracking-tight ${textClass} ${isOver ? 'text-[#ca8a04]' : ''}`}>
-        {value}%
-      </span>
-    </div>
-  );
-}
-
 function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
   return (
     <motion.div 
@@ -718,17 +663,17 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
            <div className="flex items-center gap-2 bg-[#D2F442] px-3.5 py-2 rounded-xl text-zinc-900 font-medium text-[14px] shadow-[0_4px_15px_rgb(210,244,66,0.15)]">
              <span className="font-bold">+{task.points} pts</span>
            </div>
-           <div className="flex items-center gap-2 bg-[#1C1C1E] px-3.5 py-2 rounded-xl text-zinc-300 font-medium text-[14px]">
-             <Clock className="w-4 h-4 text-zinc-400" /> {task.timeLimit} limit
+           <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-3.5 py-2 rounded-xl text-zinc-200 font-medium text-[14px]">
+             <Clock className="w-4 h-4 text-zinc-300" /> {task.timeLimit} limit
            </div>
            {task.requiresPhoto && (
-             <div className="flex items-center gap-2 bg-[#1C1C1E] px-3.5 py-2 rounded-xl text-zinc-300 font-medium text-[14px]">
-               <Camera className="w-4 h-4 text-zinc-400" /> Photo proof
+             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-3.5 py-2 rounded-xl text-zinc-200 font-medium text-[14px]">
+               <Camera className="w-4 h-4 text-zinc-300" /> Photo proof
              </div>
            )}
         </div>
 
-        <div className="bg-[#1C1C1E] rounded-t-[32px] p-6 shadow-xl text-white mt-4 flex-1 border-t border-zinc-800/50">
+        <div className="bg-white/5 backdrop-blur-md rounded-[32px] p-6 shadow-xl text-white mt-4 border border-white/10 mb-[120px] flex flex-col">
           <h3 className="font-bold text-[16px] mb-2 text-white">Description</h3>
           <p className="text-zinc-400 text-[15px] leading-relaxed mb-6">
             {task.description || "No additional description provided for this task. Follow standard procedures."}
@@ -739,8 +684,8 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
               <h3 className="font-bold text-[16px] mb-3 text-white">Attached Files</h3>
               <div className="flex flex-col gap-2 mb-6">
                 {task.files.map((file: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-700/50 bg-zinc-800/50 cursor-pointer hover:bg-zinc-800 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-zinc-700 flex items-center justify-center shrink-0">
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 cursor-pointer hover:bg-black/40 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                       <ImageIcon className="w-5 h-5 text-zinc-400" />
                     </div>
                     <span className="text-[14px] font-semibold text-zinc-200 flex-1 truncate">{file}</span>
@@ -751,23 +696,23 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
           )}
 
           {task.assignee && (
-            <div className="mt-2 pt-6 border-t border-zinc-700/50 flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-zinc-800/80 flex items-center justify-center">
+            <div className="mt-2 pt-6 border-t border-white/10 flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center border border-white/5">
                  <User className="w-5 h-5 text-zinc-400" />
                </div>
                <div>
-                 <p className="text-[12px] text-zinc-500 font-medium">Assigned to</p>
+                 <p className="text-[12px] text-zinc-400 font-medium">Assigned to</p>
                  <p className="text-[14px] font-bold text-white">{task.assignee}</p>
                </div>
             </div>
           )}
           {task.assignedGroup && (
-            <div className="mt-2 pt-6 border-t border-zinc-700/50 flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-zinc-800/80 flex items-center justify-center">
+            <div className="mt-2 pt-6 border-t border-white/10 flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center border border-white/5">
                  <User className="w-5 h-5 text-zinc-400" />
                </div>
                <div>
-                 <p className="text-[12px] text-zinc-500 font-medium">Assigned Group</p>
+                 <p className="text-[12px] text-zinc-400 font-medium">Assigned Group</p>
                  <p className="text-[14px] font-bold text-white">{task.assignedGroup}</p>
                </div>
             </div>
@@ -787,7 +732,7 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
           </button>
         )}
         {task.status === 'completed' && (
-          <div className="pointer-events-auto w-full py-4 rounded-2xl bg-[#1C1C1E] text-[#a1a1aa] font-bold text-[16px] flex justify-center items-center gap-2 border border-zinc-800">
+          <div className="pointer-events-auto w-full py-4 rounded-2xl bg-white/5 backdrop-blur-md text-[#a1a1aa] font-bold text-[16px] flex justify-center items-center gap-2 border border-white/10">
             <Check className="w-5 h-5" /> Completed
           </div>
         )}
