@@ -107,7 +107,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-[100dvh] bg-[#141416] text-[#F3F4F6] font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif] antialiased overflow-hidden flex flex-col relative w-full shadow-2xl selection:bg-[#D2F442] selection:text-black">
+    <div className="absolute inset-0 bg-[#141416] text-[#F3F4F6] font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif] antialiased overflow-hidden flex flex-col shadow-2xl selection:bg-[#D2F442] selection:text-black">
       {/* Background ambient gradient */}
       <div className="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-br from-[#2f3812] via-[#141416] to-[#141416] opacity-60 pointer-events-none" />
 
