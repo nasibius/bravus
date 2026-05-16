@@ -59,10 +59,11 @@ export default function App() {
         const newTask: Task = { 
           id: '6', 
           title: 'Update promotion signs', 
-          category: 'Specific', 
+          category: 'Floor', 
           points: 3, 
           timeLimit: '45 mins', 
           status: 'open', 
+          isUrgent: true, 
           requiresPhoto: true, 
           description: "Clearance Event Prep:\n1. Photograph all current Weekend Sale signs.\n2. Completely remove all Weekend Sale signs (Zone A, D, F banners; B, C, D shelf strips/lane cards; E, F door clings/stands). Note: Do not overlap or layer signs!\n3. Clean surfaces. Dispose of materials. Label 'WEEKEND SALE - DISPOSED'.\n4. Install new Clearance Event signs starting from Zone A.\n5. Take after-photos of all 6 zones for sign-off.", 
           files: ['sign_locations.pdf'] 
@@ -71,12 +72,12 @@ export default function App() {
             notificationSentRef.current = true;
             // Delay notification slightly to avoid state update warnings in StrictMode
             setTimeout(() => {
-                setNotifications(prevNotifs => [{id: `notif-${Date.now()}`, text: 'New specific task assigned: Update promotion signs', time: 'Just now'}, ...prevNotifs]);
+                setNotifications(prevNotifs => [{id: `notif-${Date.now()}`, text: 'New urgent task assigned: Update promotion signs', time: 'Just now'}, ...prevNotifs]);
             }, 0);
         }
         return [newTask, ...prev];
       });
-    }, 6000);
+    }, 10000);
     return () => clearTimeout(timer);
   }, []);
 
