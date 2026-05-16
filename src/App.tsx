@@ -96,8 +96,8 @@ export default function App() {
   }, [tasks]);
 
   const handleClaim = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'claimed', assignee: 'Nigar' } : t));
-    setSelectedTask(prev => prev?.id === taskId ? { ...prev, status: 'claimed', assignee: 'Nigar' } : prev);
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'claimed', assignee: 'Elvin' } : t));
+    setSelectedTask(prev => prev?.id === taskId ? { ...prev, status: 'claimed', assignee: 'Elvin' } : prev);
   };
 
   const handleCompleteRequest = (taskId: string) => {
@@ -148,7 +148,7 @@ export default function App() {
         points: calculatedPoints,
         status: 'open',
         requiresPhoto: true,
-        assignee: 'Nigar',
+        assignee: 'Elvin',
       };
       setTasks(prev => [newTask, ...prev]);
       setAddTaskModalOpen(false);
@@ -422,7 +422,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
       <div className="flex justify-between items-start px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5">
         <div>
           <p className="text-[#a1a1aa] text-[13px] font-medium tracking-wide mb-1">Sunday, 17 May</p>
-          <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Nigar</h1>
+          <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Elvin</h1>
         </div>
         <button onClick={onOpenNotifications} className="relative w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center shrink-0 hover:bg-white/10 transition-colors cursor-pointer border border-white/10 shadow-lg">
           <Bell className="w-4 h-4 text-white" />
@@ -495,10 +495,10 @@ function ProfileView({ tasks }: { tasks: Task[] }) {
       
       {/* Profile Header */}
       <div className="flex items-center gap-4 mb-8">
-        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Nigar Aliyeva" className="w-[72px] h-[72px] rounded-full ring-4 ring-[#1C1C1E] object-cover" />
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Elvin Mammadov" className="w-[72px] h-[72px] rounded-full ring-4 ring-[#1C1C1E] object-cover" />
         <div>
-          <h1 className="text-[22px] font-semibold text-white tracking-tight">Nigar Aliyeva</h1>
-          <p className="text-[#a1a1aa] text-[14px]">Cashier Manager</p>
+          <h1 className="text-[22px] font-semibold text-white tracking-tight">Elvin Mammadov</h1>
+          <p className="text-[#a1a1aa] text-[14px]">Cashier Operations</p>
         </div>
       </div>
       
