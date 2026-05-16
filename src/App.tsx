@@ -29,8 +29,7 @@ interface Task {
 }
 
 const initialTasks: Task[] = [
-  { id: '3', title: 'Help at register 3', category: 'Service', points: 2, timeLimit: '15 mins', status: 'open', isUrgent: true, requiresPhoto: false, description: 'Line is backing up, need immediate assistance for 15 minutes to clear the rush.' },
-  { id: '6', title: 'Update promotion signs', category: 'Floor', points: 3, timeLimit: '45 mins', status: 'open', requiresPhoto: true, description: "Clearance Event Prep:\n1. Photograph all current Weekend Sale signs.\n2. Completely remove all Weekend Sale signs (Zone A, D, F banners; B, C, D shelf strips/lane cards; E, F door clings/stands). Note: Do not overlap or layer signs!\n3. Clean surfaces. Dispose of materials. Label 'WEEKEND SALE - DISPOSED'.\n4. Install new Clearance Event signs starting from Zone A.\n5. Take after-photos of all 6 zones for sign-off.", files: ['sign_locations.pdf', 'clearance_guidelines.pdf'] },
+  { id: '3', title: 'Help at register 3', category: 'Service', points: 2, timeLimit: '15 mins', status: 'open', requiresPhoto: false, description: 'Line is backing up, need immediate assistance for 15 minutes to clear the rush.' },
   { id: '7', title: 'Work as cashier (3 hours)', category: 'Service', points: 8, timeLimit: '3 hrs', status: 'open', requiresPhoto: false },
   { id: '8', title: 'Organizing products on shelves', category: 'Stock', points: 4, timeLimit: '1 hr', status: 'open', requiresPhoto: true },
   { id: '9', title: 'Chaning price tags in drink area', category: 'Floor', points: 3, timeLimit: '30 mins', status: 'open', requiresPhoto: true }
@@ -43,11 +42,44 @@ export default function App() {
   const [taskToComplete, setTaskToComplete] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [viewingFile, setViewingFile] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<{id: string, text: string, time: string}[]>([]);
+  const [pointAnim, setPointAnim] = useState<{points: number, id: number} | null>(null);
   
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isProcessingTask, setIsProcessingTask] = useState(false);
+
+  const notificationSentRef = useRef(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTasks(prev => {
+        if (prev.some(t => t.id === '6')) return prev;
+        const newTask: Task = { 
+          id: '6', 
+          title: 'Update promotion signs', 
+          category: 'Floor', 
+          points: 3, 
+          timeLimit: '45 mins', 
+          status: 'open', 
+          isUrgent: true, 
+          requiresPhoto: true, 
+          description: "Clearance Event Prep:\n1. Photograph all current Weekend Sale signs.\n2. Completely remove all Weekend Sale signs (Zone A, D, F banners; B, C, D shelf strips/lane cards; E, F door clings/stands). Note: Do not overlap or layer signs!\n3. Clean surfaces. Dispose of materials. Label 'WEEKEND SALE - DISPOSED'.\n4. Install new Clearance Event signs starting from Zone A.\n5. Take after-photos of all 6 zones for sign-off.", 
+          files: ['sign_locations.pdf'] 
+        };
+        if (!notificationSentRef.current) {
+            notificationSentRef.current = true;
+            // Delay notification slightly to avoid state update warnings in StrictMode
+            setTimeout(() => {
+                setNotifications(prevNotifs => [{id: `notif-${Date.now()}`, text: 'New urgent task assigned: Update promotion signs', time: 'Just now'}, ...prevNotifs]);
+            }, 0);
+        }
+        return [newTask, ...prev];
+      });
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Prevent background scrolling when overlays are open
   useEffect(() => {
@@ -65,8 +97,8 @@ export default function App() {
   }, [tasks]);
 
   const handleClaim = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'claimed', assignee: 'Hasan' } : t));
-    setSelectedTask(prev => prev?.id === taskId ? { ...prev, status: 'claimed', assignee: 'Hasan' } : prev);
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'claimed', assignee: 'Nigar' } : t));
+    setSelectedTask(prev => prev?.id === taskId ? { ...prev, status: 'claimed', assignee: 'Nigar' } : prev);
   };
 
   const handleCompleteRequest = (taskId: string) => {
@@ -80,7 +112,14 @@ export default function App() {
   };
 
   const finalizeComplete = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t));
+    setTasks(prev => {
+      const task = prev.find(t => t.id === taskId);
+      if (task) {
+        setPointAnim({ points: task.points, id: Date.now() });
+        setTimeout(() => setPointAnim(null), 3000);
+      }
+      return prev.map(t => t.id === taskId ? { ...t, status: 'completed' } : t);
+    });
     setSelectedTask(prev => prev?.id === taskId ? { ...prev, status: 'completed' } : prev);
     setPhotoModalOpen(false);
     setTaskToComplete(null);
@@ -110,7 +149,7 @@ export default function App() {
         points: calculatedPoints,
         status: 'open',
         requiresPhoto: true,
-        assignee: 'Hasan',
+        assignee: 'Nigar',
       };
       setTasks(prev => [newTask, ...prev]);
       setAddTaskModalOpen(false);
@@ -123,6 +162,25 @@ export default function App() {
       {/* Background ambient gradient */}
       <div className="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-br from-[#2f3812] via-[#141416] to-[#141416] opacity-60 pointer-events-none z-0" />
       <BackgroundHexagon />
+
+      {/* Point Animation */}
+      <AnimatePresence>
+        {pointAnim && (
+          <motion.div
+            key={pointAnim.id}
+            initial={{ opacity: 0, y: -20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 16, scale: 1 }}
+            exit={{ opacity: 0, y: 5, scale: 0.8, filter: "blur(4px)" }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="fixed top-[env(safe-area-inset-top)] mt-4 left-1/2 -translate-x-1/2 z-[300] bg-white/10 backdrop-blur-xl text-white px-4 py-2 rounded-2xl font-semibold shadow-2xl flex items-center gap-2 border border-white/20"
+          >
+            <div className="w-5 h-5 rounded-full bg-[#D2F442]/20 flex items-center justify-center shrink-0 border border-[#D2F442]/30 text-[#D2F442]">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <span className="text-[14px]">+{pointAnim.points} pts</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col flex-1 w-full">
@@ -137,12 +195,13 @@ export default function App() {
                 onComplete={handleCompleteRequest}
                 onOpenMore={() => setMoreMenuOpen(true)}
                 onOpenNotifications={() => setNotificationsOpen(true)}
+                notificationsCount={notifications.length}
                 onTaskClick={setSelectedTask}
               />
             </motion.div>
           ) : (
             <motion.div key="profile" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.15, ease: "easeOut" }} className="flex flex-col flex-1">
-              <ProfileView />
+              <ProfileView tasks={tasks} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -182,22 +241,39 @@ export default function App() {
       {/* Modals & Overlays */}
       <AnimatePresence>
       {photoModalOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white rounded-3xl p-6 w-full max-w-sm mx-auto shadow-2xl flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4 text-blue-600">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]">
+          <motion.div initial={{ y: '100%', scale: 0.95, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: '100%', scale: 0.95, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-t-3xl sm:rounded-3xl p-8 w-full max-w-sm mx-auto shadow-2xl flex flex-col items-center">
+            
+            <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 shadow-[0_0_15px_rgb(255,255,255,0.1)] flex items-center justify-center mb-6 text-white/80">
               <Camera className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-zinc-900 mb-2">Photo Required</h3>
-            <p className="text-zinc-500 text-center text-[15px] mb-6">Please upload a photo of the completed task area for verification.</p>
-            <button 
-              onClick={() => taskToComplete && finalizeComplete(taskToComplete)}
-              className="w-full py-3.5 bg-zinc-900 text-white rounded-xl font-bold text-[15px] mb-3 hover:bg-black transition-colors"
-            >
-              Take Photo & Complete
-            </button>
+            
+            <h3 className="text-xl font-bold text-white tracking-tight mb-2">Photo Required</h3>
+            <p className="text-zinc-400 text-center text-[14px] leading-relaxed mb-8">Please upload or capture a photo of the completed task area for verification.</p>
+            
+            <div className="w-full relative">
+              <input 
+                type="file" 
+                accept="image/*" 
+                capture="environment" 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                title=" "
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    if (taskToComplete) finalizeComplete(taskToComplete);
+                  }
+                }}
+              />
+              <button 
+                className="w-full py-3.5 bg-[#D2F442] text-black rounded-2xl font-bold text-[15px] mb-3 hover:bg-[#c1e331] shadow-[0_4px_15px_rgba(210,244,66,0.2)] transition-colors pointer-events-none"
+              >
+                Take Photo & Complete
+              </button>
+            </div>
+            
             <button 
               onClick={() => { setPhotoModalOpen(false); setTaskToComplete(null); }}
-              className="w-full py-3.5 bg-zinc-100 text-zinc-600 rounded-xl font-bold text-[15px] hover:bg-zinc-200 transition-colors"
+              className="w-full py-3.5 bg-white/5 border border-white/10 text-zinc-300 rounded-2xl font-bold text-[15px] hover:bg-white/10 transition-colors"
             >
               Cancel
             </button>
@@ -208,8 +284,8 @@ export default function App() {
 
       <AnimatePresence>
       {addTaskModalOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]">
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]" onClick={() => !isProcessingTask && setAddTaskModalOpen(false)}>
+          <motion.div onClick={(e) => e.stopPropagation()} initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white tracking-tight">Submit New Task</h3>
               <button onClick={() => !isProcessingTask && setAddTaskModalOpen(false)} className="text-zinc-400 hover:text-white bg-zinc-800 rounded-full p-1.5"><X className="w-5 h-5" /></button>
@@ -255,14 +331,40 @@ export default function App() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center p-0" onClick={() => setNotificationsOpen(false)}>
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-md rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-4 border-t border-white/10" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-1.5 bg-zinc-700/50 rounded-full mx-auto mb-2" />
-            <div className="text-center py-6">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-lg">
-                <Bell className="w-8 h-8 text-white/50" />
-              </div>
-              <h3 className="text-[17px] font-bold text-white mb-2">No notifications for now</h3>
-              <p className="text-[14px] text-zinc-400">We'll alert you when there's an update.</p>
+            
+            <div className="flex justify-between items-center mb-2 px-1">
+              <h3 className="text-[20px] font-bold text-white tracking-tight">Notifications</h3>
+              {notifications.length > 0 && <span className="text-[13px] font-bold text-zinc-400 bg-white/10 px-2 py-1 rounded-full">{notifications.length} new</span>}
             </div>
-            <button onClick={() => setNotificationsOpen(false)} className="w-full py-3.5 bg-white/10 backdrop-blur-md text-white rounded-xl font-bold text-[15px] hover:bg-white/20 transition-colors border border-white/10">Close</button>
+
+            {notifications.length === 0 ? (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-lg">
+                  <Bell className="w-8 h-8 text-white/50" />
+                </div>
+                <h3 className="text-[17px] font-bold text-white mb-2">No notifications for now</h3>
+                <p className="text-[14px] text-zinc-400">We'll alert you when there's an update.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-1">
+                {notifications.map((n) => (
+                  <div key={n.id} className="bg-white/10 border border-white/5 rounded-2xl p-4 flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#D2F442]/20 flex items-center justify-center shrink-0 mt-0.5">
+                       <Bell className="w-5 h-5 text-[#D2F442]" />
+                    </div>
+                    <div className="flex-1">
+                       <p className="text-white text-[14px] leading-snug font-medium mb-1.5">{n.text}</p>
+                       <p className="text-zinc-500 text-[12px] font-medium">{n.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <button onClick={() => {
+              setNotifications([]); // mark as read
+              setNotificationsOpen(false);
+            }} className="w-full py-3.5 bg-white/10 backdrop-blur-md text-white rounded-xl font-bold text-[15px] hover:bg-white/20 transition-colors border border-white/10 mt-2">Close</button>
           </motion.div>
         </motion.div>
       )}
@@ -296,7 +398,7 @@ export default function App() {
 
 // --- Sub-Views ---
 
-function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpenMore, onOpenNotifications, onTaskClick }: any) {
+function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpenMore, onOpenNotifications, onTaskClick, notificationsCount }: any) {
   const [filter, setFilter] = useState<'All' | 'Available' | 'Completed' | 'Urgent'>('All');
 
   const filteredTasks = useMemo(() => {
@@ -321,10 +423,13 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
       <div className="flex justify-between items-start px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5">
         <div>
           <p className="text-[#a1a1aa] text-[13px] font-medium tracking-wide mb-1">Sunday, 17 May</p>
-          <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Hasan</h1>
+          <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Nigar</h1>
         </div>
-        <button onClick={onOpenNotifications} className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center shrink-0 hover:bg-white/10 transition-colors cursor-pointer border border-white/10 shadow-lg">
+        <button onClick={onOpenNotifications} className="relative w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center shrink-0 hover:bg-white/10 transition-colors cursor-pointer border border-white/10 shadow-lg">
           <Bell className="w-4 h-4 text-white" />
+          {notificationsCount > 0 && (
+             <div className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-[#0d0d0f]" />
+          )}
         </button>
       </div>
 
@@ -381,16 +486,20 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
   );
 }
 
-function ProfileView() {
+function ProfileView({ tasks }: { tasks: Task[] }) {
+  const [showAllHistory, setShowAllHistory] = useState(false);
+  const completedTasks = tasks.filter(t => t.status === 'completed');
+  const displayedTasks = showAllHistory ? completedTasks : completedTasks.slice(0, 3);
+  
   return (
     <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-6 flex-1">
       
       {/* Profile Header */}
       <div className="flex items-center gap-4 mb-8">
-        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Hasan Hasanov" className="w-[72px] h-[72px] rounded-full ring-4 ring-[#1C1C1E] object-cover" />
+        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Nigar Aliyeva" className="w-[72px] h-[72px] rounded-full ring-4 ring-[#1C1C1E] object-cover" />
         <div>
-          <h1 className="text-[22px] font-semibold text-white tracking-tight">Hasan Hasanov</h1>
-          <p className="text-[#a1a1aa] text-[14px]">Store Associate</p>
+          <h1 className="text-[22px] font-semibold text-white tracking-tight">Nigar Aliyeva</h1>
+          <p className="text-[#a1a1aa] text-[14px]">Cashier Manager</p>
         </div>
       </div>
       
@@ -445,29 +554,26 @@ function ProfileView() {
 
       {/* Task History */}
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[24px] p-5 shadow-lg mb-[calc(7rem+env(safe-area-inset-bottom))]">
-        <h3 className="text-white font-semibold text-[15px] mb-4">Recent Task History</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-white font-semibold text-[15px]">Recent Task History</h3>
+          {completedTasks.length > 3 && (
+            <button onClick={() => setShowAllHistory(!showAllHistory)} className="text-[#a1a1aa] text-[13px] font-medium hover:text-white transition-colors">
+              {showAllHistory ? 'Show Less' : 'View All'}
+            </button>
+          )}
+        </div>
         <div className="flex flex-col gap-3">
-          <div className="flex justify-between items-center border-b border-zinc-700/50 pb-3">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-white">Restock front shelves</span>
-              <span className="text-[12px] text-zinc-400">Today, 2:30 PM</span>
+          {displayedTasks.length === 0 ? (
+             <p className="text-zinc-500 text-[14px]">No completed tasks yet.</p>
+          ) : displayedTasks.map((task, i) => (
+            <div key={i} className={`flex justify-between items-center ${i !== displayedTasks.length - 1 ? 'border-b border-zinc-700/50 pb-3' : 'pb-1'}`}>
+              <div className="flex flex-col">
+                <span className="text-[14px] font-semibold text-white">{task.title}</span>
+                <span className="text-[12px] text-zinc-400">Completed</span>
+              </div>
+              <span className="text-[13px] font-semibold text-[#D2F442]">+{task.points} pts</span>
             </div>
-            <span className="text-[13px] font-semibold text-[#D2F442]">+3 pts</span>
-          </div>
-          <div className="flex justify-between items-center border-b border-zinc-700/50 pb-3">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-white">Clean breakroom</span>
-              <span className="text-[12px] text-zinc-400">Today, 11:15 AM</span>
-            </div>
-            <span className="text-[13px] font-semibold text-[#D2F442]">+2 pts</span>
-          </div>
-          <div className="flex justify-between items-center pb-1">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-white">End of day deposit</span>
-              <span className="text-[12px] text-zinc-400">Yesterday, 9:00 PM</span>
-            </div>
-            <span className="text-[13px] font-semibold text-[#D2F442]">+5 pts</span>
-          </div>
+          ))}
         </div>
       </div>
     </div>
@@ -581,7 +687,7 @@ function NavButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
       {isActive && (
         <motion.div 
           layoutId="nav-pill"
-          className="absolute inset-0 bg-white rounded-full shadow-md z-0"
+          className="absolute inset-0 bg-[#D2F442] rounded-full shadow-[0_0_15px_rgba(210,244,66,0.3)] z-0"
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
         />
       )}
@@ -644,9 +750,6 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
             </span>
           )}
         </div>
-        <div className="flex items-center justify-center px-2 py-1 bg-zinc-800/80 rounded-lg shadow-sm border border-zinc-700/50 text-[#D2F442] font-bold text-[12px] whitespace-nowrap">
-          +{task.points} pts
-        </div>
       </div>
       
       <div className="flex justify-between items-end mt-1">
@@ -704,9 +807,6 @@ function TaskDetailView({ task, onClose, onClaim, onComplete, onViewFile }: any)
         <h1 className="text-[28px] font-bold text-white leading-tight mb-4">{task.title}</h1>
         
         <div className="flex flex-wrap gap-2 mb-8">
-           <div className="flex items-center gap-2 bg-[#D2F442] px-3.5 py-2 rounded-xl text-zinc-900 font-medium text-[14px] shadow-[0_4px_15px_rgb(210,244,66,0.15)]">
-             <span className="font-bold">+{task.points} pts</span>
-           </div>
            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-3.5 py-2 rounded-xl text-zinc-200 font-medium text-[14px]">
              <Clock className="w-4 h-4 text-zinc-300" /> {task.timeLimit} limit
            </div>

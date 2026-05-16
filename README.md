@@ -15,6 +15,31 @@
 
 ---
 
+## 🗺️ Product Roadmap
+
+1. **Phase 1: Foundation & Core Workflows**
+   - Deploy task dashboard and personalized manager assignments.
+   - Implement basic gamification (points for tasks).
+   - Launch in-app document viewer for operational guidelines.
+2. **Phase 2: AI Automation & Smart Delegation**
+   - Rollout AI-powered task generation for store managers.
+   - Dynamic point allocation based on task complexity and time limits.
+   - Smart urgency routing to alert available staff of high-priority tasks.
+3. **Phase 3: Verification & Quality Assurance**
+   - Implement camera-based photo verification workflows directly in-app.
+   - Create a manager review and approval loop for completed work.
+   - Generate audit trails for store compliance.
+4. **Phase 4: Advanced Gamification & Social Features**
+   - Introduce leaderboards, badges, and monthly store-wide competitions.
+   - Activity calendars and historical performance tracking for employees.
+   - Reward redemption system allowing employees to trade points for perks.
+5. **Phase 5: Enterprise Integration & Analytics**
+   - Integrate with existing HR, scheduling, and POS/inventory management systems.
+   - Build managerial analytics dashboards to monitor workforce efficiency.
+   - Leverage AI for predictive staffing and task forecasting based on store traffic data.
+
+---
+
 ## Run Locally
 
 **Prerequisites:**  Node.js
