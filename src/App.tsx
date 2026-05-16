@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bell, MoreHorizontal, Flag, BookOpen, User, Plus, Calendar, Clock, Check, CheckCircle2, ArrowRight, Camera, X, Image as ImageIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
@@ -48,6 +48,15 @@ export default function App() {
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [isProcessingTask, setIsProcessingTask] = useState(false);
+
+  // Prevent background scrolling when overlays are open
+  useEffect(() => {
+    if (selectedTask || photoModalOpen || addTaskModalOpen || moreMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [selectedTask, photoModalOpen, addTaskModalOpen, moreMenuOpen]);
   
   const dailyGoal = 50;
   // Calculate gamification points
@@ -110,7 +119,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#141416] text-[#F3F4F6] font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif] antialiased flex flex-col relative shadow-2xl selection:bg-[#D2F442] selection:text-black">
+    <div className="min-h-[100dvh] w-full bg-[#141416] text-[#F3F4F6] font-sans antialiased flex flex-col relative shadow-2xl selection:bg-[#D2F442] selection:text-black">
       {/* Background ambient gradient */}
       <div className="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-br from-[#2f3812] via-[#141416] to-[#141416] opacity-60 pointer-events-none z-0" />
       <BackgroundHexagon />
@@ -136,20 +145,26 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* Footer */}
+        <div className="mt-auto px-6 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 text-center text-zinc-500 text-[12px] font-medium shrink-0 pointer-events-none">
+          <span className="font-bold text-zinc-400">Bravus</span><br/>
+          Copyright © Darvish CO
+        </div>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
+      <div className="fixed bottom-[calc(0.5rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
         {/* Nav Pill */}
-        <div className="flex bg-[#28282A] p-1 rounded-full shadow-2xl flex-1 mr-3 pointer-events-auto items-center">
+        <div className="flex bg-[#1C1C1E] p-0.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex-1 mr-3 pointer-events-auto items-center border border-zinc-800/50">
           <NavButton 
-            icon={<Calendar className="w-5 h-5" />} 
+            icon={<Calendar className="w-4 h-4" />} 
             label="Today" 
             isActive={activeTab === 'today'} 
             onClick={() => setActiveTab('today')} 
           />
           <NavButton 
-            icon={<User className="w-5 h-5" />} 
+            icon={<User className="w-4 h-4" />} 
             label="Profile" 
             isActive={activeTab === 'profile'} 
             onClick={() => setActiveTab('profile')} 
@@ -158,9 +173,9 @@ export default function App() {
         {/* FAB */}
         <button 
           onClick={() => setAddTaskModalOpen(true)}
-          className="bg-[#28282A] w-[50px] h-[50px] rounded-full flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer border border-zinc-700/50"
+          className="bg-[#1C1C1E] w-[40px] h-[40px] rounded-full flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer border border-zinc-700/50"
         >
-          <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+          <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
         </button>
       </div>
 
@@ -194,24 +209,24 @@ export default function App() {
       <AnimatePresence>
       {addTaskModalOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6 pb-[env(safe-area-inset-bottom)]">
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-[#1C1C1E] border border-zinc-800 rounded-t-3xl sm:rounded-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 w-full max-w-sm mx-auto shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-zinc-900 tracking-tight">Submit New Task</h3>
-              <button onClick={() => !isProcessingTask && setAddTaskModalOpen(false)} className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 rounded-full p-1.5"><X className="w-5 h-5" /></button>
+              <h3 className="text-xl font-bold text-white tracking-tight">Submit New Task</h3>
+              <button onClick={() => !isProcessingTask && setAddTaskModalOpen(false)} className="text-zinc-400 hover:text-white bg-zinc-800 rounded-full p-1.5"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleAIAddTask} className="flex flex-col gap-4 text-zinc-900">
-              <input name="title" required disabled={isProcessingTask} placeholder="What task did you complete?" className="w-full px-4 py-3 rounded-xl bg-zinc-100 border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#D2F442] font-medium disabled:opacity-50" />
+              <input name="title" required disabled={isProcessingTask} placeholder="What task did you complete?" className="w-full px-4 py-3 rounded-xl bg-[#0A0A0A] border border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#D2F442] font-medium disabled:opacity-50 text-white placeholder-zinc-500" />
               
-              <div className="border-2 border-dashed border-zinc-300 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-zinc-50 transition-colors">
-                <ImageIcon className="w-8 h-8 text-zinc-400" />
+              <div className="border border-dashed border-zinc-700 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-zinc-800/50 transition-colors bg-[#0A0A0A]/50">
+                <ImageIcon className="w-8 h-8 text-zinc-500" />
                 <span className="text-[14px] font-medium text-zinc-500">Upload Photo Proof</span>
               </div>
 
-              <button type="submit" disabled={isProcessingTask} className="w-full py-3.5 bg-[#D2F442] text-zinc-900 rounded-xl font-bold text-[16px] mt-4 shadow-sm hover:bg-[#c1e331] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              <button type="submit" disabled={isProcessingTask} className="w-full py-3.5 bg-[#D2F442] text-black rounded-xl font-bold text-[15px] mt-4 shadow-sm hover:bg-[#c1e331] transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                 {isProcessingTask ? (
                    <>
-                     <div className="w-4 h-4 rounded-full border-2 border-zinc-900/20 border-t-zinc-900 animate-spin" />
-                     AI is calculating points...
+                     <div className="w-4 h-4 rounded-full border-2 border-black/20 border-t-black animate-spin" />
+                     Processing...
                    </>
                 ) : 'Submit to AI'}
               </button>
@@ -224,12 +239,12 @@ export default function App() {
       <AnimatePresence>
       {moreMenuOpen && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center p-0" onClick={() => setMoreMenuOpen(false)}>
-          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-2" onClick={e => e.stopPropagation()}>
-            <div className="w-12 h-1.5 bg-zinc-200 rounded-full mx-auto mb-4" />
-            <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors">Sort by Urgent First</button>
-            <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors">Sort by Points</button>
-            <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors">Clear Completed</button>
-            <button onClick={() => setMoreMenuOpen(false)} className="w-full mt-2 py-3.5 bg-zinc-100 text-zinc-600 rounded-xl font-bold text-[15px] hover:bg-zinc-200 transition-colors">Cancel</button>
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-[#1C1C1E] rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-2 border-t border-zinc-800/50" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-1.5 bg-zinc-700/50 rounded-full mx-auto mb-4" />
+            <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-white hover:bg-zinc-800/50 transition-colors">Sort by Urgent First</button>
+            <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-white hover:bg-zinc-800/50 transition-colors">Sort by Points</button>
+            <button className="w-full text-left px-4 py-3.5 rounded-xl font-semibold text-white hover:bg-zinc-800/50 transition-colors">Clear Completed</button>
+            <button onClick={() => setMoreMenuOpen(false)} className="w-full mt-2 py-3.5 bg-zinc-800 text-zinc-300 rounded-xl font-bold text-[15px] hover:bg-zinc-700 transition-colors">Cancel</button>
           </motion.div>
         </motion.div>
       )}
@@ -280,7 +295,7 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
           <p className="text-[#a1a1aa] text-[13px] font-medium tracking-wide mb-1">Wednesday, 26 February</p>
           <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Hasan</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-[#28282A] flex items-center justify-center shrink-0 hover:bg-zinc-800 transition-colors cursor-pointer">
+        <button className="w-10 h-10 rounded-full bg-[#1C1C1E] flex items-center justify-center shrink-0 hover:bg-zinc-800 transition-colors cursor-pointer border border-zinc-800/50">
           <Bell className="w-4 h-4 text-white" />
         </button>
       </div>
@@ -309,11 +324,11 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
         <TabBadge label="Completed" count={`${tasks.filter((t: Task) => t.status === 'completed').length}`} isActive={filter === 'Completed'} onClick={() => setFilter('Completed')} />
       </div>
 
-      {/* White Sheet Content */}
-      <div className="bg-[#FFFFFF] mx-0 sm:mx-0 rounded-t-[32px] mt-4 pt-7 px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex-1 flex flex-col">
-        <div className="flex justify-between items-center mb-5 px-1">
-          <h3 className="text-[17px] font-bold text-zinc-900 tracking-tight">{filter} Tasks</h3>
-          <button onClick={onOpenMore} className="text-zinc-400 p-1 hover:text-zinc-600 transition-colors cursor-pointer"><MoreHorizontal className="w-5 h-5" /></button>
+      {/* Task List Content */}
+      <div className="mx-0 sm:mx-0 mt-0 pt-4 px-5 flex-1 flex flex-col">
+        <div className="flex justify-between items-center mb-4 px-1">
+          <h3 className="text-[17px] font-bold text-white tracking-tight">{filter} Tasks</h3>
+          <button onClick={onOpenMore} className="text-zinc-400 p-1 hover:text-white transition-colors cursor-pointer"><MoreHorizontal className="w-5 h-5" /></button>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -360,7 +375,7 @@ function ProfileView() {
       
       {/* Profile Header */}
       <div className="flex items-center gap-4 mb-8">
-        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Hasan Hasanov" className="w-[72px] h-[72px] rounded-full ring-4 ring-[#28282A] object-cover" />
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Hasan Hasanov" className="w-[72px] h-[72px] rounded-full ring-4 ring-[#1C1C1E] object-cover" />
         <div>
           <h1 className="text-[22px] font-semibold text-white tracking-tight">Hasan Hasanov</h1>
           <p className="text-[#a1a1aa] text-[14px]">Store Associate</p>
@@ -369,18 +384,18 @@ function ProfileView() {
       
       {/* Stats */}
       <div className="flex gap-4 mb-8">
-         <div className="flex-1 bg-[#28282A] rounded-[24px] p-5 shadow-lg">
+         <div className="flex-1 bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg">
             <p className="text-[#a1a1aa] text-[13px] font-medium mb-1">Monthly Points</p>
             <p className="text-[#D2F442] text-[22px] font-semibold">1,420</p>
          </div>
-         <div className="flex-1 bg-[#28282A] rounded-[24px] p-5 shadow-lg">
+         <div className="flex-1 bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg">
             <p className="text-[#a1a1aa] text-[13px] font-medium mb-1">Overall</p>
             <p className="text-white text-[22px] font-semibold">8,350</p>
          </div>
       </div>
 
       {/* Activity Calendar (GitHub style) */}
-      <div className="bg-[#28282A] rounded-[24px] p-5 shadow-lg mb-8">
+      <div className="bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg mb-8">
         <h3 className="text-white font-semibold text-[15px] mb-3">Activity Calendar</h3>
         <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-2">
            {/* Generate roughly 7 months of 7 days */}
@@ -417,29 +432,29 @@ function ProfileView() {
       </div>
 
       {/* Task History */}
-      <div className="bg-white rounded-[24px] p-5 shadow-lg">
-        <h3 className="text-zinc-900 font-semibold text-[15px] mb-4">Recent Task History</h3>
+      <div className="bg-[#1C1C1E] rounded-[24px] p-5 shadow-lg mb-[calc(7rem+env(safe-area-inset-bottom))] border border-zinc-800/50">
+        <h3 className="text-white font-semibold text-[15px] mb-4">Recent Task History</h3>
         <div className="flex flex-col gap-3">
-          <div className="flex justify-between items-center border-b border-zinc-100 pb-3">
+          <div className="flex justify-between items-center border-b border-zinc-700/50 pb-3">
             <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-zinc-900">Restock front shelves</span>
-              <span className="text-[12px] text-zinc-500">Today, 2:30 PM</span>
+              <span className="text-[14px] font-semibold text-white">Restock front shelves</span>
+              <span className="text-[12px] text-zinc-400">Today, 2:30 PM</span>
             </div>
-            <span className="text-[13px] font-semibold text-zinc-900">+3 pts</span>
+            <span className="text-[13px] font-semibold text-[#D2F442]">+3 pts</span>
           </div>
-          <div className="flex justify-between items-center border-b border-zinc-100 pb-3">
+          <div className="flex justify-between items-center border-b border-zinc-700/50 pb-3">
             <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-zinc-900">Clean breakroom</span>
-              <span className="text-[12px] text-zinc-500">Today, 11:15 AM</span>
+              <span className="text-[14px] font-semibold text-white">Clean breakroom</span>
+              <span className="text-[12px] text-zinc-400">Today, 11:15 AM</span>
             </div>
-            <span className="text-[13px] font-semibold text-zinc-900">+2 pts</span>
+            <span className="text-[13px] font-semibold text-[#D2F442]">+2 pts</span>
           </div>
           <div className="flex justify-between items-center pb-1">
             <div className="flex flex-col">
-              <span className="text-[14px] font-semibold text-zinc-900">End of day deposit</span>
-              <span className="text-[12px] text-zinc-500">Yesterday, 9:00 PM</span>
+              <span className="text-[14px] font-semibold text-white">End of day deposit</span>
+              <span className="text-[12px] text-zinc-400">Yesterday, 9:00 PM</span>
             </div>
-            <span className="text-[13px] font-semibold text-zinc-900">+5 pts</span>
+            <span className="text-[13px] font-semibold text-[#D2F442]">+5 pts</span>
           </div>
         </div>
       </div>
@@ -522,7 +537,7 @@ function NavButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
   return (
     <button 
       onClick={onClick}
-      className={`relative flex items-center gap-2 h-10 flex-1 justify-center rounded-full font-semibold transition-colors duration-300 cursor-pointer ${isActive ? 'text-zinc-900' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+      className={`relative flex items-center gap-1.5 h-8 flex-1 justify-center rounded-full font-medium text-[12px] transition-colors duration-300 cursor-pointer ${isActive ? 'text-zinc-900' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
     >
       {isActive && (
         <motion.div 
@@ -543,7 +558,7 @@ function TabBadge({ label, count, isActive = false, onClick }: { label: string, 
   return (
     <button 
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[18px] cursor-pointer transition-all duration-200 hover:scale-[0.98] active:scale-95 ${isActive ? 'bg-white shadow-sm ring-1 ring-white' : 'bg-[#28282A] hover:bg-zinc-800'}`}>
+      className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[18px] cursor-pointer transition-all duration-200 hover:scale-[0.98] active:scale-95 ${isActive ? 'bg-white shadow-sm ring-1 ring-white' : 'bg-[#1C1C1E] hover:bg-zinc-800'}`}>
       <span className={`text-[14px] font-bold text-left ${isActive ? 'text-zinc-900' : 'text-[#e4e4e7]'}`}>{label}</span>
       <span className={`text-[11px] font-semibold text-left ${isActive ? 'text-[#65761a]' : 'text-[#858589]'}`}>{count}</span>
     </button>
@@ -571,9 +586,9 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
       </button>
     );
   } else {
-    accentColor = "bg-zinc-200";
+    accentColor = "bg-zinc-700";
     actionBtn = (
-      <div className="flex items-center justify-center gap-1 text-[13px] font-bold text-zinc-500 px-2 py-1 bg-zinc-100 rounded-lg">
+      <div className="flex items-center justify-center gap-1 text-[13px] font-bold text-zinc-400 px-2 py-1 bg-zinc-800/50 rounded-lg">
         <Check className="w-4 h-4" /> Completed
       </div>
     );
@@ -582,22 +597,22 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
   return (
     <div 
       onClick={onClick}
-      className={`flex-1 rounded-[20px] p-3.5 pl-4 relative border shadow-sm overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-md hover:border-zinc-200 
-      ${task.status === 'completed' ? 'bg-white border-zinc-200 opacity-70' : 'bg-[#F5F6F8] border-zinc-100'}
+      className={`flex-1 rounded-[20px] p-3.5 pl-4 relative border shadow-sm overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-md hover:border-zinc-600 
+      ${task.status === 'completed' ? 'bg-[#1C1C1E]/60 border-zinc-800/50 opacity-70' : 'bg-[#1C1C1E] border-zinc-700/50'}
     `}>
       {/* Left Color Accent Line */}
       <div className={`absolute left-0 top-3 bottom-3 w-1.5 rounded-r-md ${accentColor}`} />
       
       <div className="flex justify-between items-start mb-2.5">
         <div className="flex flex-col gap-1 w-3/4">
-          <h4 className="text-[15px] font-bold text-zinc-900 tracking-tight leading-snug">{task.title}</h4>
+          <h4 className="text-[15px] font-bold text-white tracking-tight leading-snug">{task.title}</h4>
           {task.isUrgent && (
-            <span className="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-md bg-zinc-800 text-white text-[10px] font-bold uppercase tracking-wider">
-              <Flag className="w-3 h-3 text-white" /> Urgent
+            <span className="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-md bg-[#D2F442]/20 text-[#D2F442] text-[10px] font-bold uppercase tracking-wider mt-0.5">
+              <Flag className="w-3 h-3 text-[#D2F442]" /> Urgent
             </span>
           )}
         </div>
-        <div className="flex items-center justify-center px-2 py-1 bg-zinc-100 rounded-lg shadow-sm border border-zinc-200 text-zinc-900 font-bold text-[12px] whitespace-nowrap">
+        <div className="flex items-center justify-center px-2 py-1 bg-zinc-800/80 rounded-lg shadow-sm border border-zinc-700/50 text-[#D2F442] font-bold text-[12px] whitespace-nowrap">
           +{task.points} pts
         </div>
       </div>
@@ -605,23 +620,23 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
       <div className="flex justify-between items-end mt-1">
         <div className="flex flex-col gap-1.5">
           {task.assignedGroup && (
-             <div className="flex items-center gap-1.5 text-zinc-500 font-medium tracking-wide">
+             <div className="flex items-center gap-1.5 text-zinc-400 font-medium tracking-wide">
                <User className="w-3.5 h-3.5 opacity-70" />
                <span className="text-[12px]">For: {task.assignedGroup}</span>
              </div>
           )}
           {task.assignee && (
-             <div className="flex items-center gap-1.5 text-zinc-500 font-medium tracking-wide">
+             <div className="flex items-center gap-1.5 text-zinc-400 font-medium tracking-wide">
                <User className="w-3.5 h-3.5 opacity-70" />
                <span className="text-[12px]">Assigned: {task.assignee}</span>
              </div>
           )}
-          <div className="flex items-center gap-1.5 text-zinc-500 font-medium">
+          <div className="flex items-center gap-1.5 text-zinc-400 font-medium">
             <Clock className="w-3.5 h-3.5 opacity-70" />
             <span className="text-[12px]">{task.timeLimit} limit</span>
           </div>
-          <div className="flex items-center gap-1.5 text-zinc-500 font-medium tracking-wide">
-            <Flag className={`w-3.5 h-3.5 opacity-70 ${task.isUrgent ? 'text-zinc-800' : ''}`} />
+          <div className="flex items-center gap-1.5 text-zinc-400 font-medium tracking-wide">
+            <Flag className={`w-3.5 h-3.5 opacity-70 ${task.isUrgent ? 'text-[#D2F442]' : ''}`} />
             <span className="text-[12px] uppercase">{task.category}</span>
           </div>
         </div>
@@ -679,11 +694,11 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: '100%', opacity: 0 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="fixed inset-0 w-full h-[100dvh] z-[80] bg-[#141416] flex flex-col pt-[calc(env(safe-area-inset-top)+2.5rem)]"
+      className="fixed inset-0 w-full h-[100dvh] z-[80] bg-[#000000] flex flex-col pt-[calc(env(safe-area-inset-top)+2.5rem)]"
     >
       {/* Header */}
       <div className="flex justify-between items-center px-6 pt-2 pb-4">
-        <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#28282A] flex items-center justify-center shrink-0 hover:bg-zinc-800 transition-colors cursor-pointer text-white">
+        <button onClick={onClose} className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center shrink-0 hover:bg-zinc-800 transition-colors cursor-pointer text-white border border-zinc-800/50">
           <ArrowRight className="w-5 h-5 -scale-x-100" />
         </button>
         <span className="text-white font-semibold flex-1 text-center truncate px-4">{task.category} Task</span>
@@ -703,32 +718,32 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
            <div className="flex items-center gap-2 bg-[#D2F442] px-3.5 py-2 rounded-xl text-zinc-900 font-medium text-[14px] shadow-[0_4px_15px_rgb(210,244,66,0.15)]">
              <span className="font-bold">+{task.points} pts</span>
            </div>
-           <div className="flex items-center gap-2 bg-[#28282A] px-3.5 py-2 rounded-xl text-zinc-300 font-medium text-[14px]">
+           <div className="flex items-center gap-2 bg-[#1C1C1E] px-3.5 py-2 rounded-xl text-zinc-300 font-medium text-[14px]">
              <Clock className="w-4 h-4 text-zinc-400" /> {task.timeLimit} limit
            </div>
            {task.requiresPhoto && (
-             <div className="flex items-center gap-2 bg-[#28282A] px-3.5 py-2 rounded-xl text-zinc-300 font-medium text-[14px]">
+             <div className="flex items-center gap-2 bg-[#1C1C1E] px-3.5 py-2 rounded-xl text-zinc-300 font-medium text-[14px]">
                <Camera className="w-4 h-4 text-zinc-400" /> Photo proof
              </div>
            )}
         </div>
 
-        <div className="bg-white rounded-[24px] p-6 shadow-xl text-zinc-900">
-          <h3 className="font-bold text-[16px] mb-2">Description</h3>
-          <p className="text-zinc-600 text-[15px] leading-relaxed mb-6">
+        <div className="bg-[#1C1C1E] rounded-t-[32px] p-6 shadow-xl text-white mt-4 flex-1 border-t border-zinc-800/50">
+          <h3 className="font-bold text-[16px] mb-2 text-white">Description</h3>
+          <p className="text-zinc-400 text-[15px] leading-relaxed mb-6">
             {task.description || "No additional description provided for this task. Follow standard procedures."}
           </p>
 
           {task.files && task.files.length > 0 && (
             <>
-              <h3 className="font-bold text-[16px] mb-3">Attached Files</h3>
+              <h3 className="font-bold text-[16px] mb-3 text-white">Attached Files</h3>
               <div className="flex flex-col gap-2 mb-6">
                 {task.files.map((file: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 bg-zinc-50 cursor-pointer hover:bg-zinc-100 transition-colors">
-                    <div className="w-10 h-10 rounded-lg bg-zinc-200 flex items-center justify-center shrink-0">
-                      <ImageIcon className="w-5 h-5 text-zinc-500" />
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-700/50 bg-zinc-800/50 cursor-pointer hover:bg-zinc-800 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-zinc-700 flex items-center justify-center shrink-0">
+                      <ImageIcon className="w-5 h-5 text-zinc-400" />
                     </div>
-                    <span className="text-[14px] font-semibold flex-1 truncate">{file}</span>
+                    <span className="text-[14px] font-semibold text-zinc-200 flex-1 truncate">{file}</span>
                   </div>
                 ))}
               </div>
@@ -736,24 +751,24 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
           )}
 
           {task.assignee && (
-            <div className="mt-2 pt-6 border-t border-zinc-100 flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
+            <div className="mt-2 pt-6 border-t border-zinc-700/50 flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-zinc-800/80 flex items-center justify-center">
                  <User className="w-5 h-5 text-zinc-400" />
                </div>
                <div>
                  <p className="text-[12px] text-zinc-500 font-medium">Assigned to</p>
-                 <p className="text-[14px] font-bold">{task.assignee}</p>
+                 <p className="text-[14px] font-bold text-white">{task.assignee}</p>
                </div>
             </div>
           )}
           {task.assignedGroup && (
-            <div className="mt-2 pt-6 border-t border-zinc-100 flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
+            <div className="mt-2 pt-6 border-t border-zinc-700/50 flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-zinc-800/80 flex items-center justify-center">
                  <User className="w-5 h-5 text-zinc-400" />
                </div>
                <div>
                  <p className="text-[12px] text-zinc-500 font-medium">Assigned Group</p>
-                 <p className="text-[14px] font-bold">{task.assignedGroup}</p>
+                 <p className="text-[14px] font-bold text-white">{task.assignedGroup}</p>
                </div>
             </div>
           )}
@@ -772,7 +787,7 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
           </button>
         )}
         {task.status === 'completed' && (
-          <div className="pointer-events-auto w-full py-4 rounded-2xl bg-[#28282A] text-[#a1a1aa] font-bold text-[16px] flex justify-center items-center gap-2 border border-zinc-800">
+          <div className="pointer-events-auto w-full py-4 rounded-2xl bg-[#1C1C1E] text-[#a1a1aa] font-bold text-[16px] flex justify-center items-center gap-2 border border-zinc-800">
             <Check className="w-5 h-5" /> Completed
           </div>
         )}
