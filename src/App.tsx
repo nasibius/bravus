@@ -7,6 +7,9 @@ import React, { useState, useMemo } from 'react';
 import { Bell, MoreHorizontal, Flag, BookOpen, User, Plus, Calendar, Clock, Check, CheckCircle2, ArrowRight, Camera, X, Image as ImageIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
+import { Canvas } from '@react-three/fiber';
+import { Center, Environment, Float } from '@react-three/drei';
+import * as THREE from 'three';
 
 type TaskStatus = 'open' | 'claimed' | 'completed';
 
@@ -109,7 +112,8 @@ export default function App() {
   return (
     <div className="min-h-[100dvh] w-full bg-[#141416] text-[#F3F4F6] font-[system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,Helvetica,Arial,sans-serif] antialiased flex flex-col relative shadow-2xl selection:bg-[#D2F442] selection:text-black">
       {/* Background ambient gradient */}
-      <div className="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-br from-[#2f3812] via-[#141416] to-[#141416] opacity-60 pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-[400px] bg-gradient-to-br from-[#2f3812] via-[#141416] to-[#141416] opacity-60 pointer-events-none z-0" />
+      <BackgroundHexagon />
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col flex-1 w-full pb-32">
@@ -135,9 +139,9 @@ export default function App() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
+      <div className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] inset-x-0 w-full max-w-[400px] mx-auto px-4 flex justify-between items-center z-50 pointer-events-none">
         {/* Nav Pill */}
-        <div className="flex bg-[#28282A] p-1.5 rounded-full shadow-2xl flex-1 mr-3 pointer-events-auto items-center">
+        <div className="flex bg-[#28282A] p-1 rounded-full shadow-2xl flex-1 mr-3 pointer-events-auto items-center">
           <NavButton 
             icon={<Calendar className="w-5 h-5" />} 
             label="Today" 
@@ -154,9 +158,9 @@ export default function App() {
         {/* FAB */}
         <button 
           onClick={() => setAddTaskModalOpen(true)}
-          className="bg-[#28282A] w-[60px] h-[60px] rounded-full flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer border border-zinc-700/50"
+          className="bg-[#28282A] w-[50px] h-[50px] rounded-full flex items-center justify-center shrink-0 shadow-[0_8px_30px_rgba(0,0,0,0.5)] pointer-events-auto hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer border border-zinc-700/50"
         >
-          <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
+          <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
         </button>
       </div>
 
@@ -445,6 +449,71 @@ function ProfileView() {
 
 // --- Components ---
 
+function HexagonGeometry() {
+  const shape = useMemo(() => {
+    const s = new THREE.Shape();
+    // outer hexagon
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      const x = Math.cos(angle) * 1;
+      const y = Math.sin(angle) * 1;
+      if (i === 0) s.moveTo(x, y);
+      else s.lineTo(x, y);
+    }
+    s.closePath();
+
+    // inner hole
+    const hole = new THREE.Path();
+    for (let i = 0; i < 6; i++) {
+        const angle = (i * Math.PI) / 3;
+        const x = Math.cos(angle) * 0.7; // 30% thickness
+        const y = Math.sin(angle) * 0.7;
+        if (i === 0) hole.moveTo(x, y);
+        else hole.lineTo(x, y);
+    }
+    hole.closePath();
+    s.holes.push(hole);
+
+    return s;
+  }, []);
+
+  const extrudeSettings = {
+    depth: 0.3, // depth of hexagon
+    bevelEnabled: true,
+    bevelSegments: 4,
+    steps: 1,
+    bevelSize: 0.05,
+    bevelThickness: 0.05
+  };
+
+  return (
+    <mesh castShadow receiveShadow>
+      <extrudeGeometry args={[shape, extrudeSettings]} />
+      <meshStandardMaterial color="#6bad5b" roughness={0.3} metalness={0.7} />
+    </mesh>
+  );
+}
+
+function BackgroundHexagon() {
+  return (
+    <div className="absolute top-0 inset-x-0 h-[500px] pointer-events-none z-0 opacity-40 mix-blend-screen">
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[5, 10, 5]} intensity={1.5} />
+        <pointLight position={[-10, -10, -10]} intensity={0.5} />
+        <Environment preset="city" />
+        <Float speed={2} rotationIntensity={0.8} floatIntensity={1.5}>
+           <Center>
+             <group rotation={[Math.PI / 8, Math.PI / 10, 0]} scale={1.5}>
+               <HexagonGeometry />
+             </group>
+           </Center>
+        </Float>
+      </Canvas>
+    </div>
+  );
+}
+
 function NavButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }) {
   if (!label) {
     return null;
@@ -453,7 +522,7 @@ function NavButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
   return (
     <button 
       onClick={onClick}
-      className={`relative flex items-center gap-2 h-12 flex-1 justify-center rounded-full font-semibold transition-colors duration-300 cursor-pointer ${isActive ? 'text-zinc-900' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+      className={`relative flex items-center gap-2 h-10 flex-1 justify-center rounded-full font-semibold transition-colors duration-300 cursor-pointer ${isActive ? 'text-zinc-900' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
     >
       {isActive && (
         <motion.div 
