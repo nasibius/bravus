@@ -29,10 +29,10 @@ interface Task {
 }
 
 const initialTasks: Task[] = [
-  { id: '3', title: 'Help at register 3', category: 'Service', points: 2, timeLimit: '15 mins', status: 'open', isUrgent: true, requiresPhoto: false, assignedGroup: 'Cashiers', description: 'Line is backing up, need immediate assistance for 15 minutes to clear the rush.' },
-  { id: '6', title: 'Update promotion signs', category: 'Floor', points: 3, timeLimit: '45 mins', status: 'open', requiresPhoto: true, assignedGroup: 'Floor Staff', description: 'Remove old weekend sale signs and put up the new clearance event signs.', files: ['sign_locations.pdf', 'clearance_guidelines.pdf'] },
+  { id: '3', title: 'Help at register 3', category: 'Service', points: 2, timeLimit: '15 mins', status: 'open', isUrgent: true, requiresPhoto: false, description: 'Line is backing up, need immediate assistance for 15 minutes to clear the rush.' },
+  { id: '6', title: 'Update promotion signs', category: 'Floor', points: 3, timeLimit: '45 mins', status: 'open', requiresPhoto: true, description: "Clearance Event Prep:\n1. Photograph all current Weekend Sale signs.\n2. Completely remove all Weekend Sale signs (Zone A, D, F banners; B, C, D shelf strips/lane cards; E, F door clings/stands). Note: Do not overlap or layer signs!\n3. Clean surfaces. Dispose of materials. Label 'WEEKEND SALE - DISPOSED'.\n4. Install new Clearance Event signs starting from Zone A.\n5. Take after-photos of all 6 zones for sign-off.", files: ['sign_locations.pdf', 'clearance_guidelines.pdf'] },
   { id: '7', title: 'Work as cashier (3 hours)', category: 'Service', points: 8, timeLimit: '3 hrs', status: 'open', requiresPhoto: false },
-  { id: '8', title: 'Organizing products on shelves', category: 'Stock', points: 4, timeLimit: '1 hr', status: 'open', requiresPhoto: false },
+  { id: '8', title: 'Organizing products on shelves', category: 'Stock', points: 4, timeLimit: '1 hr', status: 'open', requiresPhoto: true },
   { id: '9', title: 'Chaning price tags in drink area', category: 'Floor', points: 3, timeLimit: '30 mins', status: 'open', requiresPhoto: true }
 ];
 
@@ -42,6 +42,7 @@ export default function App() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [taskToComplete, setTaskToComplete] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [viewingFile, setViewingFile] = useState<string | null>(null);
   
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -50,12 +51,12 @@ export default function App() {
 
   // Prevent background scrolling when overlays are open
   useEffect(() => {
-    if (selectedTask || photoModalOpen || addTaskModalOpen || moreMenuOpen || notificationsOpen) {
+    if (selectedTask || photoModalOpen || addTaskModalOpen || moreMenuOpen || notificationsOpen || viewingFile) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-  }, [selectedTask, photoModalOpen, addTaskModalOpen, moreMenuOpen, notificationsOpen]);
+  }, [selectedTask, photoModalOpen, addTaskModalOpen, moreMenuOpen, notificationsOpen, viewingFile]);
   
   const dailyGoal = 50;
   // Calculate gamification points
@@ -107,7 +108,7 @@ export default function App() {
         category: 'AI Assessed',
         timeLimit: '30 mins',
         points: calculatedPoints,
-        status: 'claimed',
+        status: 'open',
         requiresPhoto: true,
         assignee: 'Hasan',
       };
@@ -275,6 +276,17 @@ export default function App() {
             onClose={() => setSelectedTask(null)}
             onClaim={() => handleClaim(selectedTask.id)}
             onComplete={() => handleCompleteRequest(selectedTask.id)}
+            onViewFile={setViewingFile}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* File Viewer Simulator */}
+      <AnimatePresence>
+        {viewingFile && (
+          <FileViewerSimulator 
+            filename={viewingFile}
+            onClose={() => setViewingFile(null)}
           />
         )}
       </AnimatePresence>
@@ -285,13 +297,12 @@ export default function App() {
 // --- Sub-Views ---
 
 function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpenMore, onOpenNotifications, onTaskClick }: any) {
-  const [filter, setFilter] = useState<'All' | 'Available' | 'My Tasks' | 'Completed' | 'Urgent'>('All');
+  const [filter, setFilter] = useState<'All' | 'Available' | 'Completed' | 'Urgent'>('All');
 
   const filteredTasks = useMemo(() => {
     let result = tasks;
     switch (filter) {
       case 'Available': result = tasks.filter((t: Task) => t.status === 'open'); break;
-      case 'My Tasks': result = tasks.filter((t: Task) => t.status === 'claimed'); break;
       case 'Completed': result = tasks.filter((t: Task) => t.status === 'completed'); break;
       case 'Urgent': result = tasks.filter((t: Task) => t.isUrgent && t.status !== 'completed'); break;
       default: result = tasks.filter((t: Task) => t.status !== 'completed'); // 'All' excludes completed for a cleaner view
@@ -322,7 +333,6 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
         <TabBadge label="All" count={`${tasks.filter((t: Task) => t.status !== 'completed').length}`} isActive={filter === 'All'} onClick={() => setFilter('All')} />
         <TabBadge label="Urgent" count={`${tasks.filter((t: Task) => t.isUrgent).length}`} isActive={filter === 'Urgent'} onClick={() => setFilter('Urgent')} />
         <TabBadge label="Available" count={`${tasks.filter((t: Task) => t.status === 'open').length}`} isActive={filter === 'Available'} onClick={() => setFilter('Available')} />
-        <TabBadge label="My Tasks" count={`${tasks.filter((t: Task) => t.status === 'claimed').length}`} isActive={filter === 'My Tasks'} onClick={() => setFilter('My Tasks')} />
         <TabBadge label="Completed" count={`${tasks.filter((t: Task) => t.status === 'completed').length}`} isActive={filter === 'Completed'} onClick={() => setFilter('Completed')} />
       </div>
 
@@ -566,7 +576,7 @@ function NavButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
   return (
     <button 
       onClick={onClick}
-      className={`relative flex items-center gap-1.5 h-8 flex-1 justify-center rounded-full font-medium text-[12px] transition-colors duration-300 cursor-pointer ${isActive ? 'text-zinc-900' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+      className={`relative flex items-center gap-1.5 h-8 flex-1 justify-center rounded-full font-medium text-[12px] transition-colors duration-300 cursor-pointer ${isActive ? 'text-zinc-900' : 'text-zinc-400 active:text-white active:bg-white/5'}`}
     >
       {isActive && (
         <motion.div 
@@ -587,7 +597,7 @@ function TabBadge({ label, count, isActive = false, onClick }: { label: string, 
   return (
     <button 
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[18px] cursor-pointer transition-all duration-200 hover:scale-[0.98] active:scale-95 backdrop-blur-md ${isActive ? 'bg-[#D2F442]/20 border-[#D2F442]/30 border shadow-lg' : 'bg-white/5 border border-white/5 hover:bg-white/10'}`}>
+      className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[18px] cursor-pointer transition-all duration-200 hover:scale-[0.98] active:scale-95 backdrop-blur-sm ${isActive ? 'bg-[#D2F442]/20 border-[#D2F442]/30 border shadow-lg' : 'bg-transparent border border-white/10 active:bg-white/5'}`}>
       <span className={`text-[14px] font-bold text-left ${isActive ? 'text-[#D2F442]' : 'text-[#e4e4e7]'}`}>{label}</span>
       <span className={`text-[11px] font-semibold text-left ${isActive ? 'text-[#D2F442]/80' : 'text-[#858589]'}`}>{count}</span>
     </button>
@@ -597,28 +607,21 @@ function TabBadge({ label, count, isActive = false, onClick }: { label: string, 
 const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () => void, onClick: () => void }> = ({ task, onClaim, onComplete, onClick }) => {
   
   // Decide styling accents based on state
-  let accentColor = "bg-zinc-300";
+  let accentColor = "bg-zinc-700";
   let actionBtn = null;
 
-  if (task.status === 'open') {
-    accentColor = task.isUrgent ? "bg-zinc-800" : "bg-[#D2F442]";
+  if (task.status === 'open' || task.status === 'claimed') {
+    accentColor = task.isUrgent ? "bg-zinc-500" : "bg-zinc-700";
     actionBtn = (
-      <button onClick={(e) => { e.stopPropagation(); onClaim(); }} className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-black text-white text-[13px] font-bold rounded-xl active:scale-95 transition-all shadow-sm">
-        Claim <ArrowRight className="w-3.5 h-3.5" />
-      </button>
-    );
-  } else if (task.status === 'claimed') {
-    accentColor = "bg-zinc-600";
-    actionBtn = (
-      <button onClick={(e) => { e.stopPropagation(); onComplete(); }} className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-[#D2F442] hover:bg-[#c1e331] text-zinc-900 text-[13px] font-bold rounded-xl active:scale-95 transition-all shadow-sm">
-        Mark Done <CheckCircle2 className="w-3.5 h-3.5" />
+      <button onClick={(e) => { e.stopPropagation(); onComplete(); }} className="flex items-center justify-center gap-1.5 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[12px] font-bold rounded-lg active:scale-95 transition-all shadow-sm">
+        Done <CheckCircle2 className="w-3.5 h-3.5" />
       </button>
     );
   } else {
-    accentColor = "bg-zinc-700";
+    accentColor = "bg-zinc-800";
     actionBtn = (
-      <div className="flex items-center justify-center gap-1 text-[13px] font-bold text-zinc-400 px-2 py-1 bg-zinc-800/50 rounded-lg">
-        <Check className="w-4 h-4" /> Completed
+      <div className="flex items-center justify-center gap-1 text-[12px] font-bold text-zinc-500 px-2 py-1 bg-transparent rounded-lg">
+        <Check className="w-3.5 h-3.5" /> Completed
       </div>
     );
   }
@@ -626,8 +629,8 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
   return (
     <div 
       onClick={onClick}
-      className={`flex-1 rounded-[20px] p-3.5 pl-4 relative border shadow-lg overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-white/20 backdrop-blur-md
-      ${task.status === 'completed' ? 'bg-white/5 border-white/5 opacity-60' : 'bg-white/5 border-white/10'}
+      className={`flex-1 rounded-[20px] p-3.5 pl-4 relative border shadow-lg overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-white/20 backdrop-blur-sm
+      ${task.status === 'completed' ? 'bg-transparent border-white/5 opacity-60' : 'bg-transparent border-white/10'}
     `}>
       {/* Left Color Accent Line */}
       <div className={`absolute left-0 top-3 bottom-3 w-1.5 rounded-r-md ${accentColor}`} />
@@ -648,12 +651,6 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
       
       <div className="flex justify-between items-end mt-1">
         <div className="flex flex-col gap-1.5">
-          {task.assignedGroup && (
-             <div className="flex items-center gap-1.5 text-zinc-400 font-medium tracking-wide">
-               <User className="w-3.5 h-3.5 opacity-70" />
-               <span className="text-[12px]">For: {task.assignedGroup}</span>
-             </div>
-          )}
           {task.assignee && (
              <div className="flex items-center gap-1.5 text-zinc-400 font-medium tracking-wide">
                <User className="w-3.5 h-3.5 opacity-70" />
@@ -679,7 +676,7 @@ const StoreTaskItem: React.FC<{ task: Task, onClaim: () => void, onComplete: () 
   );
 }
 
-function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
+function TaskDetailView({ task, onClose, onClaim, onComplete, onViewFile }: any) {
   return (
     <motion.div 
       initial={{ x: '100%', opacity: 0 }}
@@ -722,7 +719,7 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
 
         <div className="bg-white/5 backdrop-blur-md rounded-[32px] p-6 shadow-xl text-white mt-4 border border-white/10 mb-[120px] flex flex-col">
           <h3 className="font-bold text-[16px] mb-2 text-white">Description</h3>
-          <p className="text-zinc-400 text-[15px] leading-relaxed mb-6">
+          <p className="whitespace-pre-wrap text-zinc-400 text-[15px] leading-relaxed mb-6">
             {task.description || "No additional description provided for this task. Follow standard procedures."}
           </p>
 
@@ -731,12 +728,12 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
               <h3 className="font-bold text-[16px] mb-3 text-white">Attached Files</h3>
               <div className="flex flex-col gap-2 mb-6">
                 {task.files.map((file: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20 cursor-pointer hover:bg-black/40 transition-colors">
+                  <button key={idx} onClick={() => onViewFile(file)} className="flex items-center text-left w-full gap-3 p-3 rounded-xl border border-white/10 bg-black/20 cursor-pointer hover:bg-black/40 transition-colors">
                     <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                       <ImageIcon className="w-5 h-5 text-zinc-400" />
                     </div>
                     <span className="text-[14px] font-semibold text-zinc-200 flex-1 truncate">{file}</span>
-                  </div>
+                  </button>
                 ))}
               </div>
             </>
@@ -753,27 +750,11 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
                </div>
             </div>
           )}
-          {task.assignedGroup && (
-            <div className="mt-2 pt-6 border-t border-white/10 flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center border border-white/5">
-                 <User className="w-5 h-5 text-zinc-400" />
-               </div>
-               <div>
-                 <p className="text-[12px] text-zinc-400 font-medium">Assigned Group</p>
-                 <p className="text-[14px] font-bold text-white">{task.assignedGroup}</p>
-               </div>
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-[#141416] via-[#141416] to-transparent pt-20 pointer-events-none">
-        {task.status === 'open' && (
-          <button onClick={onClaim} className="pointer-events-auto w-full py-4 rounded-2xl bg-[#D2F442] hover:bg-[#c1e331] text-zinc-900 font-bold text-[16px] flex justify-center items-center gap-2 shadow-lg transition-transform active:scale-95">
-            Claim Task <ArrowRight className="w-5 h-5" />
-          </button>
-        )}
-        {task.status === 'claimed' && (
+      <div className="absolute bottom-0 inset-x-0 p-6 pb-[calc(1.5rem+env(safe-area-bottom))] bg-gradient-to-t from-[#141416] via-[#141416] to-transparent pt-20 pointer-events-none">
+        {task.status !== 'completed' && (
           <button onClick={onComplete} className="pointer-events-auto w-full py-4 rounded-2xl bg-[#D2F442] hover:bg-[#c1e331] text-zinc-900 font-bold text-[16px] flex justify-center items-center gap-2 shadow-lg transition-transform active:scale-95">
             Mark as Completed <CheckCircle2 className="w-5 h-5" />
           </button>
@@ -783,6 +764,129 @@ function TaskDetailView({ task, onClose, onClaim, onComplete }: any) {
             <Check className="w-5 h-5" /> Completed
           </div>
         )}
+      </div>
+    </motion.div>
+  );
+}
+
+function FileViewerSimulator({ filename, onClose }: { filename: string, onClose: () => void }) {
+  const isLocations = filename === 'sign_locations.pdf';
+  
+  return (
+    <motion.div 
+      initial={{ y: '100%', opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: '100%', opacity: 0 }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      className="fixed inset-0 w-full h-[100dvh] z-[90] bg-[#1a1a1a] flex flex-col"
+    >
+      <div className="flex items-center justify-between px-4 py-3 bg-[#111] border-b border-white/10 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
+            <span className="text-red-400 font-bold text-[10px]">PDF</span>
+          </div>
+          <span className="text-white font-medium text-[14px] truncate max-w-[200px]">{filename}</span>
+        </div>
+        <button onClick={onClose} className="p-2 -mr-2 bg-transparent text-white hover:bg-white/10 rounded-full cursor-pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto bg-white p-4 sm:p-8 relative">
+        <div className="max-w-3xl mx-auto text-black mt-[env(safe-area-inset-top)]">
+          {/* Header */}
+          <div className="border-b-4 border-[#5BBD2D] pb-4 mb-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-[#5BBD2D] text-2xl font-bold uppercase mb-1">Bravo</h1>
+                <h2 className="text-xl font-bold">{isLocations ? "Sign Locations & Removal Guide" : "Clearance Event — Sign Guidelines"}</h2>
+                <p className="text-sm text-gray-600 mt-2">Document Code: {isLocations ? "BRV-OPS-SL-2026-05" : "BRV-OPS-CG-2026-05"}</p>
+                <p className="text-sm text-gray-600">Effective Date: May 16, 2026</p>
+              </div>
+            </div>
+          </div>
+
+          {isLocations ? (
+            <div className="space-y-6">
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">1. PURPOSE & SCOPE</h3>
+                <p className="text-sm leading-relaxed">This document provides all Bravo store teams with a comprehensive reference for locating, removing, and replacing in-store promotional signage as part of the <strong>Weekend Sale → Clearance Event</strong> transition. Every sign position listed below must be actioned before store opening on the first day of the Clearance Event.</p>
+                <div className="bg-red-100 border-l-4 border-red-500 p-2 mt-2 text-sm text-red-800">
+                  <strong>IMPORTANT:</strong> All old Weekend Sale signs must be removed completely before new Clearance Event signs are installed. Do not overlap or layer signs.
+                </div>
+              </section>
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">2. STORE SIGN LOCATION ZONES</h3>
+                <table className="w-full text-sm text-left border-collapse border border-gray-300">
+                  <thead className="bg-[#5BBD2D] text-white">
+                    <tr>
+                      <th className="border border-gray-300 p-2">Zone</th>
+                      <th className="border border-gray-300 p-2">Zone Name</th>
+                      <th className="border border-gray-300 p-2">Priority</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td className="border border-gray-300 p-2 font-bold text-center">A</td><td className="border border-gray-300 p-2">Main Entrance & Vestibule</td><td className="border border-gray-300 p-2 font-bold">HIGH</td></tr>
+                    <tr className="bg-gray-50"><td className="border border-gray-300 p-2 font-bold text-center">B</td><td className="border border-gray-300 p-2">Checkout Lanes 1–12</td><td className="border border-gray-300 p-2 font-bold">HIGH</td></tr>
+                    <tr><td className="border border-gray-300 p-2 font-bold text-center">C</td><td className="border border-gray-300 p-2">Fresh Produce & Deli</td><td className="border border-gray-300 p-2 font-bold">MED</td></tr>
+                    <tr className="bg-gray-50"><td className="border border-gray-300 p-2 font-bold text-center">D</td><td className="border border-gray-300 p-2">Central Aisles 1–8</td><td className="border border-gray-300 p-2 font-bold">MED</td></tr>
+                    <tr><td className="border border-gray-300 p-2 font-bold text-center">E</td><td className="border border-gray-300 p-2">Frozen & Dairy Section</td><td className="border border-gray-300 p-2 font-bold">NORM</td></tr>
+                    <tr className="bg-gray-50"><td className="border border-gray-300 p-2 font-bold text-center">F</td><td className="border border-gray-300 p-2">Seasonal / Promo Aisle</td><td className="border border-gray-300 p-2 font-bold">HIGH</td></tr>
+                  </tbody>
+                </table>
+              </section>
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">3. REMOVAL CHECKLIST</h3>
+                <ul className="list-decimal pl-5 text-sm space-y-2">
+                  <li>Photograph all current Weekend Sale signs before removal</li>
+                  <li>Remove hanging banners from ceiling tracks in Zones A, D, F</li>
+                  <li>Peel window decals (Zone A-04) using plastic scraper</li>
+                  <li>Remove shelf-edge strips from all aisles</li>
+                  <li>Collect all lane divider cards from checkout lanes</li>
+                </ul>
+              </section>
+            </div>
+          ) : (
+             <div className="space-y-6">
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">1. OVERVIEW</h3>
+                <p className="text-sm leading-relaxed">This document outlines the standards, specifications, and step-by-step procedures for installing Clearance Event signs across all Bravo store locations. Following these guidelines ensures brand consistency, a compelling customer experience, and compliance with Bravo's Visual Merchandising Policy.</p>
+                <div className="bg-red-100 border-l-4 border-red-500 p-2 mt-2 text-sm text-red-800">
+                  <strong>IMPORTANT:</strong> All Weekend Sale signs must be fully removed before any Clearance Event signs are installed.
+                </div>
+              </section>
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">2. SIGN SPECIFICATIONS</h3>
+                 <ul className="list-disc pl-5 text-sm space-y-1">
+                  <li><strong>Main Entrance Banner:</strong> 200 x 80 cm</li>
+                  <li><strong>Window Splash Decal:</strong> 60 x 90 cm</li>
+                  <li><strong>Overhead Aisle Hanger:</strong> 50 x 35 cm</li>
+                  <li><strong>Shelf-Edge Strip:</strong> 100 x 5 cm</li>
+                  <li><strong>Checkout Lane Card:</strong> 20 x 15 cm</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">3. INSTALLATION INSTRUCTIONS</h3>
+                <ul className="list-decimal pl-5 text-sm space-y-2">
+                  <li><strong>Main Entrance Banner:</strong> Hook onto existing ceiling track; use provided S-hooks</li>
+                  <li><strong>Window Decal:</strong> Peel backing; apply from top; squeegee outward to remove bubbles</li>
+                  <li><strong>Overhead Aisle Hanger:</strong> Thread nylon cord through hole; tie to ceiling grid wire</li>
+                  <li><strong>Shelf-Edge Strip:</strong> Slide into existing shelf-edge channel from left end</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="text-lg font-bold text-[#5BBD2D] mb-2">4. QUALITY CHECK</h3>
+                 <ul className="list-disc pl-5 text-sm space-y-1">
+                  <li>Sign alignment: Level, centered, no visible tilting</li>
+                  <li>No Weekend Sale signs: Zero old signs remaining in any zone</li>
+                  <li>Price tags visible: WAS/NOW pricing clearly legible</li>
+                </ul>
+              </section>
+            </div>
+          )}
+          <div className="mt-12 mb-8 text-center text-xs text-gray-400">
+            BRAVO Supermarket Network | Internal Operations Document | Confidential
+          </div>
+        </div>
       </div>
     </motion.div>
   );

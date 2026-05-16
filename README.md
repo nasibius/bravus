@@ -2,16 +2,22 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# BrHive Operations
 
-This contains everything you need to run your app locally.
+**BrHive** is a gamified workforce management application designed specifically for supermarket and retail teams. It streamlines store operations by turning daily shifts into an engaging, point-based system where employees automatically receive tasks assigned by their managers, track their performance, and access operational guidelines seamlessly.
 
-View your app in AI Studio: https://ai.studio/apps/57b47ab1-a0ae-4829-a712-9caeb4df7280
+## 🌟 Top 4 Main Features
+
+1. **Gamified Task Delegation:** Employees view a personalized dashboard of tasks assigned to them by their managers, including urgent and completed tasks. Successfully completing their assigned duties rewards them with points based on priority and time limits, encouraging proactive engagement and a sense of progression.
+2. **AI-Powered Task Generation:** Store managers can use a smart AI input to instantly create tasks. The AI automatically categorizes the task, assigns appropriate point values, sets time limits, and determines if it needs photo verification based on a simple text prompt.
+3. **In-App Document & Guideline Viewer:** Tasks can include attached files, such as promotional sign policies or display guidelines. Employees can open these documents directly within the app to ensure they follow exact company protocols without switching contexts.
+4. **Quality Assurance via Photo Proof:** Certain tasks (like resetting a shelf or updating sale signs) explicitly require photo verification upon completion. This built-in accountability ensures that the work complies with visual merchandising and operational standards.
+
+---
 
 ## Run Locally
 
 **Prerequisites:**  Node.js
-
 
 1. Install dependencies:
    `npm install`
