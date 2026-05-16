@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Bell, MoreHorizontal, Flag, BookOpen, User, Plus, Calendar, Clock, Check, CheckCircle2, ArrowRight, Camera, X, Image as ImageIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Center, Environment, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -45,16 +45,17 @@ export default function App() {
   
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isProcessingTask, setIsProcessingTask] = useState(false);
 
   // Prevent background scrolling when overlays are open
   useEffect(() => {
-    if (selectedTask || photoModalOpen || addTaskModalOpen || moreMenuOpen) {
+    if (selectedTask || photoModalOpen || addTaskModalOpen || moreMenuOpen || notificationsOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-  }, [selectedTask, photoModalOpen, addTaskModalOpen, moreMenuOpen]);
+  }, [selectedTask, photoModalOpen, addTaskModalOpen, moreMenuOpen, notificationsOpen]);
   
   const dailyGoal = 50;
   // Calculate gamification points
@@ -134,6 +135,7 @@ export default function App() {
                 onClaim={handleClaim}
                 onComplete={handleCompleteRequest}
                 onOpenMore={() => setMoreMenuOpen(true)}
+                onOpenNotifications={() => setNotificationsOpen(true)}
                 onTaskClick={setSelectedTask}
               />
             </motion.div>
@@ -146,7 +148,7 @@ export default function App() {
         
         {/* Footer */}
         <div className="mt-auto px-6 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-8 text-center text-zinc-500 text-[11px] font-medium shrink-0 pointer-events-none opacity-50">
-          <span className="font-bold text-zinc-400">Bravus</span> • Copyright © Darvish CO
+          <span className="font-bold text-zinc-400">BrHive</span> • Copyright © Darvish CO
         </div>
       </div>
 
@@ -247,6 +249,24 @@ export default function App() {
       )}
       </AnimatePresence>
 
+      <AnimatePresence>
+      {notificationsOpen && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center p-0" onClick={() => setNotificationsOpen(false)}>
+          <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="bg-white/5 backdrop-blur-md rounded-t-3xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] w-full max-w-[400px] mx-auto shadow-2xl flex flex-col gap-4 border-t border-white/10" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-1.5 bg-zinc-700/50 rounded-full mx-auto mb-2" />
+            <div className="text-center py-6">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-lg">
+                <Bell className="w-8 h-8 text-white/50" />
+              </div>
+              <h3 className="text-[17px] font-bold text-white mb-2">No notifications for now</h3>
+              <p className="text-[14px] text-zinc-400">We'll alert you when there's an update.</p>
+            </div>
+            <button onClick={() => setNotificationsOpen(false)} className="w-full py-3.5 bg-white/10 backdrop-blur-md text-white rounded-xl font-bold text-[15px] hover:bg-white/20 transition-colors border border-white/10">Close</button>
+          </motion.div>
+        </motion.div>
+      )}
+      </AnimatePresence>
+
       {/* Task Details Overlay */}
       <AnimatePresence>
         {selectedTask && (
@@ -264,7 +284,7 @@ export default function App() {
 
 // --- Sub-Views ---
 
-function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpenMore, onTaskClick }: any) {
+function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpenMore, onOpenNotifications, onTaskClick }: any) {
   const [filter, setFilter] = useState<'All' | 'Available' | 'My Tasks' | 'Completed' | 'Urgent'>('All');
 
   const filteredTasks = useMemo(() => {
@@ -289,10 +309,10 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
       {/* Header */}
       <div className="flex justify-between items-start px-6 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-5">
         <div>
-          <p className="text-[#a1a1aa] text-[13px] font-medium tracking-wide mb-1">Wednesday, 26 February</p>
+          <p className="text-[#a1a1aa] text-[13px] font-medium tracking-wide mb-1">Sunday, 17 May</p>
           <h1 className="text-[22px] font-semibold text-white tracking-tight">Hi, Hasan</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center shrink-0 hover:bg-white/10 transition-colors cursor-pointer border border-white/10 shadow-lg">
+        <button onClick={onOpenNotifications} className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center shrink-0 hover:bg-white/10 transition-colors cursor-pointer border border-white/10 shadow-lg">
           <Bell className="w-4 h-4 text-white" />
         </button>
       </div>
@@ -326,13 +346,13 @@ function TodayView({ tasks, pointsEarned, dailyGoal, onClaim, onComplete, onOpen
                 No tasks found.
               </motion.div>
             ) : (
-              filteredTasks.map((task: Task) => (
+              filteredTasks.map((task: Task, index: number) => (
                 <motion.div 
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, filter: "blur(4px)" }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25, delay: index * 0.05 }}
                   key={task.id}
                 >
                   <StoreTaskItem 
@@ -491,9 +511,34 @@ function HexagonGeometry() {
   );
 }
 
+function SpinningGroup({ children }: { children: React.ReactNode }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const [targetRotation, setTargetRotation] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTargetRotation(prev => prev + Math.PI * 2);
+    }, 120000); // 2 minutes
+    return () => clearInterval(interval);
+  }, []);
+
+  useFrame((state, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = THREE.MathUtils.damp(
+        groupRef.current.rotation.y,
+        targetRotation,
+        1,
+        delta
+      );
+    }
+  });
+
+  return <group ref={groupRef}>{children}</group>;
+}
+
 function BackgroundHexagon() {
   return (
-    <div className="absolute top-0 inset-x-0 h-[500px] pointer-events-none z-0 opacity-40 mix-blend-screen">
+    <div className="absolute top-0 inset-x-0 h-[500px] pointer-events-none z-0 opacity-40 mix-blend-screen" style={{ transform: 'translateZ(0)' }}>
       <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 10, 5]} intensity={1.5} />
@@ -502,7 +547,9 @@ function BackgroundHexagon() {
         <Float speed={2} rotationIntensity={0.8} floatIntensity={1.5}>
            <Center>
              <group rotation={[Math.PI / 8, Math.PI / 10, 0]} scale={1.5}>
-               <HexagonGeometry />
+               <SpinningGroup>
+                 <HexagonGeometry />
+               </SpinningGroup>
              </group>
            </Center>
         </Float>
