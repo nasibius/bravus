@@ -1,7 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # BrHive Operations
 
 **BrHive** is a gamified workforce management application designed specifically for supermarket and retail teams. It streamlines store operations by turning daily shifts into an engaging, point-based system where employees automatically receive tasks assigned by their managers, track their performance, and access operational guidelines seamlessly.
